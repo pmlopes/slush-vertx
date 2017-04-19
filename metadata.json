@@ -1,0 +1,120 @@
+[
+  {
+    "id": "java",
+    "dependencies": [
+      { "group": "io.vertx", "artifact": "vertx-core", "version": "3.4.1" }
+    ],
+    "buildtool": "Apache Maven",
+    "main": "{package}.MainVerticle",
+    "templates": [
+      "maven/pom.xml",
+      "maven/src/main/java/{package}/MainVerticle.java"
+    ]
+  },
+  {
+    "id": "groovy",
+    "dependencies": [
+      { "group": "io.vertx", "artifact": "vertx-core", "version": "3.4.1" },
+      { "group": "io.vertx", "artifact": "vertx-lang-groovy", "version": "3.4.1" }
+    ],
+    "buildtool": "Apache Maven",
+    "main": "main.groovy",
+    "templates": [
+      "maven/pom.xml",
+      "maven/src/main/resources/main.groovy"
+    ]
+  },
+  {
+    "id": "ruby",
+    "dependencies": [
+      { "group": "io.vertx", "artifact": "vertx-core", "version": "3.4.1" },
+      { "group": "io.vertx", "artifact": "vertx-lang-ruby", "version": "3.4.1" }
+    ],
+    "buildtool": "Apache Maven",
+    "main": "main.rb",
+    "templates": [
+      "maven/pom.xml",
+      "maven/src/main/resources/main.rb"
+    ]
+  },
+  {
+    "id": "kotlin",
+    "dependencies": [
+      { "group": "io.vertx", "artifact": "vertx-core", "version": "3.4.1" },
+      { "group": "io.vertx", "artifact": "vertx-lang-kotlin", "version": "3.4.1" }
+    ],
+    "buildtool": "Apache Maven",
+    "main": "{package}.MainVerticle",
+    "templates": [
+      "maven/pom.xml",
+      "maven/src/main/kotlin/{package}/MainVerticle.kt"
+    ]
+  },
+
+  {
+    "id": "java",
+    "dependencies": [
+      { "group": "io.vertx", "artifact": "vertx-core", "version": "3.4.1" }
+    ],
+    "buildtool": "Gradle",
+    "main": "{package}.MainVerticle",
+    "templates": [
+      "gradle/build.gradle",
+      "gradle/src/main/java/{package}/MainVerticle.java"
+    ]
+  },
+  {
+    "id": "kotlin",
+    "dependencies": [
+      { "group": "io.vertx", "artifact": "vertx-core", "version": "3.4.1" },
+      { "group": "io.vertx", "artifact": "vertx-lang-kotlin", "version": "3.4.1" }
+    ],
+    "buildtool": "Gradle",
+    "main": "{package}.MainVerticle",
+    "templates": [
+      "gradle/build.gradle",
+      "gradle/src/main/kotlin/{package}/MainVerticle.kt"
+    ]
+  },
+  {
+    "id": "groovy",
+    "dependencies": [
+      { "group": "io.vertx", "artifact": "vertx-core", "version": "3.4.1" },
+      { "group": "io.vertx", "artifact": "vertx-lang-groovy", "version": "3.4.1" }
+    ],
+    "buildtool": "Gradle",
+    "main": "main.groovy",
+    "templates": [
+      "gradle/build.gradle",
+      "gradle/src/main/resources/main.groovy"
+    ]
+  },
+  {
+    "id": "ruby",
+    "dependencies": [
+      { "group": "io.vertx", "artifact": "vertx-core", "version": "3.4.1" },
+      { "group": "io.vertx", "artifact": "vertx-lang-ruby", "version": "3.4.1" }
+    ],
+    "buildtool": "Gradle",
+    "main": "main.rb",
+    "templates": [
+      "gradle/build.gradle",
+      "gradle/src/main/resources/main.rb"
+    ]
+  },
+
+  {
+    "id": "javascript",
+    "dependencies": [
+      { "group": "io.vertx", "artifact": "vertx-core", "version": "3.4.1" },
+      { "group": "io.vertx", "artifact": "vertx-lang-js", "version": "3.4.1" }
+    ],
+    "buildtool": "NPM",
+    "main": "{package}.MainVerticle",
+    "templates": [
+      "npm/package.json",
+      "npm/webpack.config.js",
+      "npm/src/main.js"
+    ]
+  }
+]
