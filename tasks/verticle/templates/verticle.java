@@ -1,8 +1,8 @@
-package {{ projectName }};
+package {{ groupId }};
 
 import io.vertx.core.AbstractVerticle;
 
-public class MainVerticle extends AbstractVerticle {
+public class {{ verticleName }} extends AbstractVerticle {
 
   @Override
   public void start() {

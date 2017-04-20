@@ -16,7 +16,7 @@
   </properties>
 
   <dependencies>
-    {{#each metadata.dependencies}}
+    {{#each dependencies}}
     <dependency>
       <groupId>{{group}}</groupId>
       <artifactId>{{artifact}}</artifactId>

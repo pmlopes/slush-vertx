@@ -1,8 +1,8 @@
-package {{ projectName }}
+package {{ groupId }}
 
 import io.vertx.core.AbstractVerticle
 
-class MainVerticle : AbstractVerticle() {
+class {{ verticleName }} : AbstractVerticle() {
 
   override fun start() {
     // your code goes here...
