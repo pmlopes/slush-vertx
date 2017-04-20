@@ -22,6 +22,10 @@
   "homepage": "https://www.jetdrone.xyz",
   "dependencies": {
     "gulp": "^3.9.0",
+    "gulp-compile-handlebars": "^0.6.1",
+    "gulp-conflict": "^0.4.0",
+    "gulp-install": "^1.1.0",
+    "gulp-rename": "^1.2.2",
     "inquirer": "^0.9.0",
     "handlebars": "^4.0.6"
   }
