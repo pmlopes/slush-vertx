@@ -5,18 +5,18 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>{{projectName}}</groupId>
-  <artifactId>{{projectName}}</artifactId>
+  <groupId>{{project_name}}</groupId>
+  <artifactId>{{project_name}}</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
-  <name>{{projectName}}</name>
+  <name>{{project_name}}</name>
 
   <properties>
-    <main.verticle>{{mainVerticle}}</main.verticle>
+    <main.verticle>{{language.main}}</main.verticle>
   </properties>
 
   <dependencies>
-    {{#each metadata.dependencies}}
+    {{#each language.dependencies}}
     <dependency>
       <groupId>{{group}}</groupId>
       <artifactId>{{artifact}}</artifactId>

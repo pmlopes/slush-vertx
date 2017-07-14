@@ -5,17 +5,27 @@ var exec = require('child_process').exec;
 var gulp = require('gulp');
 var inquirer = require('inquirer');
 
-var metadata = require('./metadata.json');
-var generator = require('./generator');
+var Utils = require('./Utils.class');
+
 
 // extract the build tools from the metadata
-var buildToolIds = [];
+/*var buildToolIds = [];
 
 metadata.forEach(function (el) {
   if (buildToolIds.indexOf(el.buildtool) === -1) {
     buildToolIds.push(el.buildtool);
   }
+});*/
+
+// Load generators
+var generators = [];
+fs.readdirSync(path.join(__dirname, "generators")).forEach((el) => {
+  var gen = require(path.join(__dirname, "generators", el));
+  if (gen.hasOwnProperty("name") && gen.hasOwnProperty("generate"))
+    generators.push({name: gen.name, value: gen.generate});
 });
+
+console.log(generators);
 
 gulp.task('git', function (done) {
   exec('git init', function (error) {
@@ -29,40 +39,33 @@ gulp.task('git', function (done) {
 
 gulp.task('new', ['git'], function (done) {
 
-  // this is a small helper that will avoid interaction with user
-  // if there is just a single element on the list
-  var showQuickPick = function (message, list, callback) {
-    if (list.length > 1) {
-      inquirer.prompt({ name: 'anwser', message: message, type: 'list', choices: list }, function (anwser) {
-        callback(anwser.anwser);
-      });
+    var project_info = {};
+
+    var base = process.cwd();
+    // the project root is derived from the event
+    if (fs.lstatSync(base).isDirectory()) {
+        project_info.root_dir = base;
     } else {
-      callback(list[0]);
+        throw new Error('\'' + base + '\' is not a directory.')
     }
-  }
 
-  var project = {};
+    if (!Utils.checkIfDirIsEmpty(project_info.root_dir))
+        throw new Error('A project already exists! Please remove it first.');
 
-  var base = process.cwd();
-  // the project root is derived from the event
-  if (fs.lstatSync(base).isDirectory()) {
-    project.projectRoot = base;
-  } else {
-    throw new Error('\'' + base + '\' is not a directory.')
-  }
+    inquirer.prompt([
+        {name: 'name', message: 'Project name:', default: path.basename(base)},
+        {type: 'list', name: 'generator', message: 'Choose the generator you want to run: ', choices: generators}
+    ]).then((answers) => {
+        project_info.project_name = answers.name.replace(" ", "-");
+        answers.generator(project_info, done);
+    });
+});
 
-  // if there is already a project file show warning and stop
-  var projectAlreadyExists = ['pom.xml', 'build.gradle', 'package.json'].some(function (el) {
-    return fs.existsSync(project.projectRoot + path.sep + el);
-  });
+/*}), function (answer) {
+      project_info.name = answer.projectName.replace(" ", "-");
 
-  if (projectAlreadyExists) {
-    throw new Error('A project already exists! Please remove it first.');
-  }
-
-  // the default project name is derived from the project root path
   inquirer.prompt({ name: 'projectName', message: 'Project name:', default: path.basename(base) }, function (answer) {
-    project.projectName = answer.projectName;
+    project_info.name = answer.projectName.replace(" ", "-");
 
     showQuickPick('Which build tool:', buildToolIds, function (buildtool) {
       // the selected build tool
@@ -93,6 +96,6 @@ gulp.task('new', ['git'], function (done) {
       });
     });
   });
-});
+});*/
 
 gulp.task('default', ['new']);

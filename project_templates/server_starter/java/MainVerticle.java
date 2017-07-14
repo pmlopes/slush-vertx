@@ -1,4 +1,4 @@
-package {{ projectName }};
+package {{ language.package }};
 
 import io.vertx.core.AbstractVerticle;
 

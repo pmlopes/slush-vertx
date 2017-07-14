@@ -168,7 +168,7 @@ module.exports.push({
 //
 //   module: {
 //     loaders: [
-//       { test: /\.js$/, exclude: /node_modules/, loader: 'babel-loader' }
+//       { gen_test: /\.js$/, exclude: /node_modules/, loader: 'babel-loader' }
 //     ]
 //   },
 //
