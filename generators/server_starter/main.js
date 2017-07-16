@@ -28,6 +28,7 @@ let languagesMetadata = [
         ],
         var_templates: {
             main: "{package}.MainVerticle",
+            package: metadata.var_templates.package,
             src_dir: metadata.var_templates.java_src_dir
         }
     },
@@ -127,6 +128,7 @@ let languagesMetadata = [
         ],
         var_templates: {
             main: "{package}.MainVerticle",
+            package: metadata.var_templates.package,
             src_dir: metadata.var_templates.kotlin_src_dir
         }
     }

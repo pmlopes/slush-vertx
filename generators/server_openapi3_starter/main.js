@@ -47,6 +47,7 @@ let languagesMetadata = [
         ],
         var_templates: {
             main: "{package}.MainVerticle",
+            package: metadata.var_templates.package,
             src_dir: metadata.var_templates.java_src_dir
         }
     }
@@ -99,11 +100,33 @@ module.exports = {
                         srcPaths.push(path.join("handlers", class_name + ".java"))
                     });
 
+                    let securitySchemas = _.get(oas, 'components.securitySchemes');
+                    if (securitySchemas) {
+                        Object.keys(securitySchemas).forEach(key => {
+                            let class_name = OAS3Utils.getClassNameFromOperationId(key, "SecurityHandler");
+                            securitySchemas[key].class_name = class_name;
+
+                            securitySchemas[key].schema_name = key;
+
+                            let info = {
+                                project_info: project_info,
+                                security_schema: securitySchemas[key],
+                                class_name: class_name
+                            };
+
+                            srcFiles.push(templatesFunctions.security_handler(info));
+                            srcPaths.push(path.join("securityHandlers", class_name + ".java"))
+                        });
+                    }
+
                     let info = {
                         project_info: project_info,
                         operations: operations,
                         openapispec_path: path.join(language.resources_dir, openapispec_filename)
-                    }
+                    };
+
+                    if (securitySchemas)
+                        info.security_schemas = _.values(securitySchemas); // Convert from object to array
 
                     srcFiles.push(templatesFunctions.main(info));
                     srcPaths.push("MainVerticle.java");
@@ -114,7 +137,7 @@ module.exports = {
                     Utils.writeFilesSync(build_tool.templates, buildFiles);
 
                     fs.mkdirpSync(language.resources_dir);
-                    fs.copySync(answer.openapispec, path.join(language.resources_dir, path.basename(answer.openapispec)));
+                    fs.copySync(answer.openapispec, path.join(language.resources_dir, openapispec_filename));
 
                     done();
                 });

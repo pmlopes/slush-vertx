@@ -27,6 +27,7 @@ module.exports = {
         }
     },
     var_templates: {
+        package: (language) => language.package.trim().replace(/^\.+(.+)/, "").replace(/(.+)\.+$/, ""), // function to trim package name and remove left and side undesired points
         java_src_dir: (language) => path.join(...(["src", "main", "java"].concat(language.package.split(".")))),
         kotlin_src_dir: (language) => path.join(...(["src", "main", "kotlin"].concat(language.package.split("."))))
     }
