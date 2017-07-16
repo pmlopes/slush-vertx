@@ -6,8 +6,8 @@ public class {{ class_name }} extends Handler<RoutingContext> {
 
     @Override
     public void handle(RoutingContext routingContext) {
-        {{#if renderParams}} RequestParameters params = routingContext.get("parsedParameters"); {{/if}}
-        // Handle {{ operation.operationId }}
+        {{#if renderParams}}RequestParameters params = routingContext.get("parsedParameters");
+        {{/if}}// Handle {{ operation.operationId }}
         routingContext.response().setStatusCode(501).setStatusMessage("Not Implemented").end();
     }
 

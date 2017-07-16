@@ -3,6 +3,7 @@ var path = require('path');
 var exec = require('child_process').exec;
 
 var gulp = require('gulp');
+var gutil = require('gulp-util');
 var inquirer = require('inquirer');
 
 var Utils = require('./Utils.class');
@@ -38,11 +39,11 @@ gulp.task('new', ['git'], function (done) {
     if (fs.lstatSync(base).isDirectory()) {
         project_info.root_dir = base;
     } else {
-        throw new Error('\'' + base + '\' is not a directory.')
+        done(new gutil.PluginError('new', '\'' + base + '\' is not a directory.'))
     }
 
     if (!Utils.checkIfDirIsEmpty(project_info.root_dir))
-        throw new Error('A project already exists! Please remove it first.');
+        done(new gutil.PluginError('new', 'A project already exists! Please remove it first.'));
 
     inquirer.prompt([
         {name: 'name', message: 'Project name:', default: path.basename(base)},

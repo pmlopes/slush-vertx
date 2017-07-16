@@ -5,6 +5,7 @@ let ajv = new require('ajv')();
 ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-04.json'));
 let deref = require('json-schema-ref-parser');
 let _ = require('lodash');
+var gutil = require('gulp-util');
 
 let Utils = require('../../Utils.class');
 let OAS3Utils = require('../../OAS3Utils.class');
@@ -60,14 +61,14 @@ module.exports = {
         Utils.processLanguage(languagesMetadata).then((result) => {
             Utils.processQuestions({type: 'input', name: 'openapispec', message: "Choose the OpenAPI 3 Specification: "}).then((answer) => {
                 deref.dereference(answer.openapispec).then((oas) => {
-                    let openapispec_filename = path.basename(answer.openapispec);
+                    let openapispec_filename = path.basename(answer.openapispec, path.extname(answer.openapispec)) + ".json";
 
                     // var valid = validateOpenAPI(oas);
                     // TODO waiting for working oas 3 schema
                     // if (!valid)
-                    //     throw new Error(validateOpenAPI.errors);
+                    //     done(new gutil.PluginError('new', validateOpenAPI.errors));
                     if (!oas.openapi.match(/^3\./g))
-                        throw new Error("Only OpenAPI 3 specs allowed");
+                        done(new gutil.PluginError('new', "Only OpenAPI 3 specs allowed"));
 
                     let language = result.language;
                     let build_tool = result.build_tool;
@@ -136,10 +137,11 @@ module.exports = {
                     Utils.writeFilesSync(srcPaths, srcFiles, language.src_dir);
                     Utils.writeFilesSync(build_tool.templates, buildFiles);
 
-                    fs.mkdirpSync(language.resources_dir);
-                    fs.copySync(answer.openapispec, path.join(language.resources_dir, openapispec_filename));
-
-                    done();
+                    deref.bundle(answer.openapispec).then((oasSerializable) => {
+                        fs.mkdirpSync(language.resources_dir);
+                        Utils.writeFilesSync([path.join(language.resources_dir, openapispec_filename)], [JSON.stringify(oasSerializable)]);
+                        done();
+                    });
                 });
             });
         });
