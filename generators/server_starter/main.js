@@ -2,9 +2,9 @@ var fs = require('fs');
 var path = require('path');
 var Handlebars = require('handlebars');
 
-let Utils = require('../Utils.class');
-let constants = require('../constants');
-let metadata = require('../common_metadata');
+let Utils = require('../../Utils.class');
+let constants = require('../../constants');
+let metadata = require('../../common_metadata');
 
 let languagesMetadata = [
     {
@@ -76,6 +76,59 @@ let languagesMetadata = [
         ],
         main: "main.groovy",
         src_dir: path.join("src", "main", "groovy")
+    },
+    {
+        name: "ruby",
+        build_tools: [
+            metadata.build_tools.gradle,
+            metadata.build_tools.maven
+        ],
+        templates: [
+            "main.rb"
+        ],
+        dependencies: [
+            {
+                group: "io.vertx",
+                artifact: "vertx-core",
+                version: constants.VERTX_VERSION
+            },
+            {
+                group: "io.vertx",
+                artifact: "vertx-lang-ruby",
+                version: constants.VERTX_VERSION
+            }
+        ],
+        main: "main.rb",
+        src_dir: path.join("src", "main", "ruby")
+    },
+    {
+        name: "kotlin",
+        build_tools: [
+            metadata.build_tools.gradle,
+            metadata.build_tools.maven
+        ],
+        templates: [
+            "MainVerticle.kt"
+        ],
+        dependencies: [
+            {
+                group: "io.vertx",
+                artifact: "vertx-core",
+                version: constants.VERTX_VERSION
+            },
+            {
+                group: "io.vertx",
+                artifact: "vertx-lang-kotlin",
+                version: constants.VERTX_VERSION
+            }
+        ],
+        questions: [
+            metadata.questions.package
+        ],
+        var_templates: {
+            main: "{package}.MainVerticle",
+            src_dir: metadata.var_templates.kotlin_src_dir
+        }
     }
 ];
 
@@ -89,8 +142,7 @@ module.exports = {
             let templatesFunctions = Utils.loadLanguageTemplates("server_starter", language.name, language.templates);
             let buildFilesTemplatesFunctions = Utils.loadBuildFilesTemplates(build_tool.name, build_tool.templates);
 
-            project_info.language = language;
-            project_info.build_tool = build_tool;
+            project_info = Utils.buildProjectObject(project_info, language, build_tool);
 
             let srcFiles = templatesFunctions.map((template) => template(project_info));
             let buildFiles = buildFilesTemplatesFunctions.map((template) => template(project_info));

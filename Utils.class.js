@@ -2,12 +2,14 @@
  * Created by francesco on 13/07/17.
  */
 
-var fs = require('fs');
+var fs = require('fs-extra');
 var path = require('path');
 var format = require("string-template");
+
 var Handlebars = require('handlebars');
+var helpers = require('handlebars-helpers')(['comparison']);
+
 var inquirer = require('inquirer');
-let mkdir = require('mkdirp');
 
 module.exports = class Utils {
     static findKeyInObjectArray(list, id, key) {
@@ -18,6 +20,21 @@ module.exports = class Utils {
     static mergeObjs(obj1, obj2, overwrite) {
         Object.keys(obj2).forEach((key) => { if (overwrite || obj1[key] == undefined) obj1[key] = obj2[key] } )
         return obj1
+    }
+
+    static buildProjectObject(project_info, language, build_tool) {
+        language.language = language.name;
+        delete language.name;
+
+        if (language.var_templates)
+            delete language.var_templates;
+        if (build_tool.var_templates)
+            delete build_tool.var_templates;
+
+        project_info = Utils.mergeObjs(project_info, language, true);
+        project_info.build_tool = build_tool;
+
+        return project_info;
     }
 
     static mkdirs(folderPath, mode) {
@@ -54,13 +71,23 @@ module.exports = class Utils {
     }
 
     static loadLanguageTemplates(generator_key, language_key, templates) {
-        let result = [];
-        let languageDir = path.resolve(path.join(__dirname, "project_templates", generator_key, language_key))
-        templates = templates.map((template) => path.join(languageDir, template));
-        templates.forEach((templatePath) => {
-            let templateSource = fs.readFileSync(templatePath, 'utf-8');
-            result.push(Handlebars.compile(templateSource));
-        });
+        let result;
+        let languageDir = path.resolve(path.join(__dirname, "project_templates", generator_key, language_key));
+        if (templates instanceof Array) {
+            result = [];
+            templates = templates.map((template) => path.join(languageDir, template));
+            templates.forEach((templatePath) => {
+                let templateSource = fs.readFileSync(templatePath, 'utf-8');
+                result.push(Handlebars.compile(templateSource));
+            });
+        } else {
+            result = {};
+            Object.keys(templates).map((key) => {
+                let templateSource = fs.readFileSync(path.join(languageDir, templates[key]), 'utf-8');
+                result[key] = Handlebars.compile(templateSource);
+            });
+
+        }
         return result;
     }
 
@@ -81,7 +108,7 @@ module.exports = class Utils {
                 var finalPath = path.join(process.cwd(), path_to_prepend, file_relative_paths[i]);
             else
                 var finalPath = path.join(process.cwd(), file_relative_paths[i]);
-            mkdir.sync(path.dirname(finalPath));
+            fs.mkdirpSync(path.dirname(finalPath));
             fs.writeFileSync(finalPath, file_contents[i],'utf-8')
         }
     }

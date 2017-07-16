@@ -21,10 +21,14 @@
   },
   "homepage": "https://www.jetdrone.xyz",
   "dependencies": {
+    "ajv": "^5.2.2",
+    "fs-extra": "^4.0.0",
     "gulp": "^3.9.0",
     "handlebars": "^4.0.6",
+    "handlebars-helpers": "^0.9.3",
     "inquirer": "^3.2.0",
-    "mkdirp": "^0.5.1",
+    "json-schema-ref-parser": "^3.1.2",
+    "lodash": "^4.17.4",
     "string-template": "^1.0.0"
   }
 }

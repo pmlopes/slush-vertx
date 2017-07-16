@@ -12,11 +12,11 @@
   <name>{{project_name}}</name>
 
   <properties>
-    <main.verticle>{{language.main}}</main.verticle>
+    <main.verticle>{{main}}</main.verticle>
   </properties>
 
   <dependencies>
-    {{#each language.dependencies}}
+    {{#each dependencies}}
     <dependency>
       <groupId>{{group}}</groupId>
       <artifactId>{{artifact}}</artifactId>
@@ -36,7 +36,7 @@
             <target>1.8</target>
           </configuration>
         </plugin>
-        {{#if kotlin}}
+        {{#compare language '==' "kotlin"}}
         <plugin>
           <artifactId>kotlin-maven-plugin</artifactId>
           <groupId>org.jetbrains.kotlin</groupId>
@@ -64,17 +64,17 @@
             </execution>
           </executions>
         </plugin>
-        {{/if}}
+        {{/compare}}
       </plugins>
     </pluginManagement>
 
     <plugins>
-      {{#if kotlin}}
+      {{#compare language '==' "kotlin"}}
       <plugin>
         <artifactId>kotlin-maven-plugin</artifactId>
         <groupId>org.jetbrains.kotlin</groupId>
       </plugin>
-      {{/if}}
+      {{/compare}}
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>

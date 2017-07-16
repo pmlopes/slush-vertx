@@ -27,6 +27,7 @@ module.exports = {
         }
     },
     var_templates: {
-        java_src_dir: (language) => path.join(...(["src", "main", "java"].concat(language.package.split("."))))
+        java_src_dir: (language) => path.join(...(["src", "main", "java"].concat(language.package.split(".")))),
+        kotlin_src_dir: (language) => path.join(...(["src", "main", "kotlin"].concat(language.package.split("."))))
     }
 }

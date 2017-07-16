@@ -5,16 +5,16 @@ buildscript {
   }
 
   dependencies {
-    {{#if kotlin}}
+    {{#compare language '==' "kotlin"}}
     classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.1.0'
-    {{/if}}
+    {{/compare}}
     classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.4'
   }
 }
 
-{{#if kotlin}}
+{{#compare language '==' "kotlin"}}
 apply plugin: 'kotlin'
-{{/if}}
+{{/compare}}
 apply plugin: 'java'
 apply plugin: 'application'
 apply plugin: 'com.github.johnrengelman.shadow'
@@ -24,12 +24,12 @@ repositories {
 }
 
 version = '0.0.1'
-group = '{{projectName}}'
+group = '{{project_name}}'
 sourceCompatibility = '1.8'
 mainClassName = 'io.vertx.core.Launcher'
 
 dependencies {
-{{#each metadata.dependencies}}
+{{#each dependencies}}
   compile '{{group}}:{{artifact}}:{{version}}'
 {{/each}}
 }
@@ -37,7 +37,7 @@ dependencies {
 shadowJar {
   classifier = 'fat'
   manifest {
-    attributes 'Main-Verticle': '{{mainVerticle}}'
+    attributes 'Main-Verticle': '{{main}}'
   }
   mergeServiceFiles {
     include 'META-INF/services/io.vertx.core.spi.VerticleFactory'
