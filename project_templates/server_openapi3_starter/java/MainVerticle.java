@@ -1,6 +1,10 @@
 {{#if project_info.package}}package {{ project_info.package }};
 
 {{/if}}import io.vertx.core.AbstractVerticle;
+import io.vertx.core.http.HttpServer;
+import io.vertx.core.http.HttpServerOptions;
+import io.vertx.ext.web.designdriven.openapi3.OpenAPI3RouterFactory;
+import io.vertx.ext.web.Router;
 
 public class MainVerticle extends AbstractVerticle {
 
@@ -8,9 +12,12 @@ public class MainVerticle extends AbstractVerticle {
 
   @Override
   public void start() {
-    OpenAPI3RouterFactory.createRouterFactoryFromFile(this.vertx, "{{ openapispec_path }}", openAPI3RouterFactoryAsyncResult -> {
+    OpenAPI3RouterFactory.createRouterFactoryFromURL(this.vertx, getClass().getResource("/{{ openapispec_filename }}").toString(), openAPI3RouterFactoryAsyncResult -> {
       if (openAPI3RouterFactoryAsyncResult.succeeded()) {
         OpenAPI3RouterFactory routerFactory = openAPI3RouterFactoryAsyncResult.result();
+
+        // Enable automatic response when ValidationException is thrown
+        routerFactory.enableValidationFailureHandler(true);
 
         // Add routes handlers
         {{#each operations}}

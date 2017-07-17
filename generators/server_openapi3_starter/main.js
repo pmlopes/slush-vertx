@@ -51,6 +51,45 @@ let languagesMetadata = [
             package: metadata.var_templates.package,
             src_dir: metadata.var_templates.java_src_dir
         }
+    },
+    {
+        name: "kotlin",
+        build_tools: [
+            metadata.build_tools.gradle,
+            metadata.build_tools.maven
+        ],
+        templates:
+            {
+                main: "MainVerticle.kt",
+                handler: "Handler.kt",
+                security_handler: "SecurityHandler.kt"
+            },
+        resources_dir: "src/resources",
+        dependencies: [
+            {
+                group: "io.vertx",
+                artifact: "vertx-core",
+                version: constants.VERTX_VERSION
+            },
+            {
+                group: "io.vertx",
+                artifact: "vertx-web",
+                version: constants.VERTX_VERSION
+            },
+            {
+                group: "io.vertx",
+                artifact: "vertx-web-api-contract",
+                version: constants.VERTX_VERSION
+            }
+        ],
+        questions: [
+            metadata.questions.package
+        ],
+        var_templates: {
+            main: "{package}.MainVerticle",
+            package: metadata.var_templates.package,
+            src_dir: metadata.var_templates.kotlin_src_dir
+        }
     }
 ];
 
@@ -98,7 +137,7 @@ module.exports = {
                             info.renderParams = true;
 
                         srcFiles.push(templatesFunctions.handler(info));
-                        srcPaths.push(path.join("handlers", class_name + ".java"))
+                        srcPaths.push(path.join("handlers", class_name + path.extname(language.templates.handler)))
                     });
 
                     let securitySchemas = _.get(oas, 'components.securitySchemes');
@@ -116,21 +155,21 @@ module.exports = {
                             };
 
                             srcFiles.push(templatesFunctions.security_handler(info));
-                            srcPaths.push(path.join("securityHandlers", class_name + ".java"))
+                            srcPaths.push(path.join("securityHandlers", class_name + path.extname(language.templates.security_handler)))
                         });
                     }
 
                     let info = {
                         project_info: project_info,
                         operations: operations,
-                        openapispec_path: path.join(language.resources_dir, openapispec_filename)
+                        openapispec_filename: openapispec_filename
                     };
 
                     if (securitySchemas)
                         info.security_schemas = _.values(securitySchemas); // Convert from object to array
 
                     srcFiles.push(templatesFunctions.main(info));
-                    srcPaths.push("MainVerticle.java");
+                    srcPaths.push(language.templates.main);
 
                     let buildFiles = buildFilesTemplatesFunctions.map((template) => template(project_info));
 
