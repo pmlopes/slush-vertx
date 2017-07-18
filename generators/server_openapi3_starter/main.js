@@ -26,12 +26,7 @@ let languagesMetadata = [
             security_handler: "SecurityHandler.java"
         },
         resources_dir: "src/resources",
-        dependencies: [
-            {
-                group: "io.vertx",
-                artifact: "vertx-core",
-                version: constants.VERTX_VERSION
-            },
+        dependencies: _.concat(metadata.dependencies.java_dependencies, [
             {
                 group: "io.vertx",
                 artifact: "vertx-web",
@@ -42,7 +37,7 @@ let languagesMetadata = [
                 artifact: "vertx-web-api-contract",
                 version: constants.VERTX_VERSION
             }
-        ],
+        ]),
         questions: [
             metadata.questions.package
         ],
@@ -55,7 +50,6 @@ let languagesMetadata = [
     {
         name: "kotlin",
         build_tools: [
-            metadata.build_tools.gradle,
             metadata.build_tools.maven
         ],
         templates:
@@ -65,12 +59,7 @@ let languagesMetadata = [
                 security_handler: "SecurityHandler.kt"
             },
         resources_dir: "src/resources",
-        dependencies: [
-            {
-                group: "io.vertx",
-                artifact: "vertx-core",
-                version: constants.VERTX_VERSION
-            },
+        dependencies: _.concat(metadata.dependencies.java_dependencies, [
             {
                 group: "io.vertx",
                 artifact: "vertx-web",
@@ -81,7 +70,7 @@ let languagesMetadata = [
                 artifact: "vertx-web-api-contract",
                 version: constants.VERTX_VERSION
             }
-        ],
+        ]),
         questions: [
             metadata.questions.package
         ],

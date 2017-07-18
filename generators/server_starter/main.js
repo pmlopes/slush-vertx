@@ -16,13 +16,7 @@ let languagesMetadata = [
         templates: [
             "MainVerticle.java"
         ],
-        dependencies: [
-            {
-                group: "io.vertx",
-                artifact: "vertx-core",
-                version: constants.VERTX_VERSION
-            }
-        ],
+        dependencies: metadata.dependencies.java_dependencies,
         questions: [
             metadata.questions.package
         ],
@@ -61,21 +55,10 @@ let languagesMetadata = [
             metadata.build_tools.maven
         ],
         templates: [
-            "main.groovy"
+            "MainVerticle.groovy"
         ],
-        dependencies: [
-            {
-                group: "io.vertx",
-                artifact: "vertx-core",
-                version: constants.VERTX_VERSION
-            },
-            {
-                group: "io.vertx",
-                artifact: "vertx-lang-groovy",
-                version: constants.VERTX_VERSION
-            }
-        ],
-        main: "main.groovy",
+        dependencies: metadata.dependencies.groovy_dependencies,
+        main: "MainVerticle",
         src_dir: path.join("src", "main", "groovy")
     },
     {
@@ -87,42 +70,19 @@ let languagesMetadata = [
         templates: [
             "main.rb"
         ],
-        dependencies: [
-            {
-                group: "io.vertx",
-                artifact: "vertx-core",
-                version: constants.VERTX_VERSION
-            },
-            {
-                group: "io.vertx",
-                artifact: "vertx-lang-ruby",
-                version: constants.VERTX_VERSION
-            }
-        ],
+        dependencies: metadata.dependencies.ruby_dependecies,
         main: "main.rb",
         src_dir: path.join("src", "main", "ruby")
     },
     {
         name: "kotlin",
         build_tools: [
-            metadata.build_tools.gradle,
             metadata.build_tools.maven
         ],
         templates: [
             "MainVerticle.kt"
         ],
-        dependencies: [
-            {
-                group: "io.vertx",
-                artifact: "vertx-core",
-                version: constants.VERTX_VERSION
-            },
-            {
-                group: "io.vertx",
-                artifact: "vertx-lang-kotlin",
-                version: constants.VERTX_VERSION
-            }
-        ],
+        dependencies: metadata.dependencies.kotlin_dependencies,
         questions: [
             metadata.questions.package
         ],
