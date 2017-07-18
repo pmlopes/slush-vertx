@@ -1,6 +1,6 @@
-package {{ package }};
+{{#if package }}package {{ package }};
 
-import io.vertx.core.AbstractVerticle;
+{{/if}}import io.vertx.core.AbstractVerticle;
 
 public class MainVerticle extends AbstractVerticle {
 

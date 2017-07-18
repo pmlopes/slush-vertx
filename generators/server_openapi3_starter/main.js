@@ -42,9 +42,9 @@ let languagesMetadata = [
             metadata.questions.package
         ],
         var_templates: {
-            main: "{package}.MainVerticle",
             package: metadata.var_templates.package,
-            src_dir: metadata.var_templates.java_src_dir
+            main: metadata.var_templates.main_class,
+            src_dir: metadata.var_templates.src_dir
         }
     },
     {
@@ -75,11 +75,45 @@ let languagesMetadata = [
             metadata.questions.package
         ],
         var_templates: {
-            main: "{package}.MainVerticle",
             package: metadata.var_templates.package,
-            src_dir: metadata.var_templates.kotlin_src_dir
+            main: metadata.var_templates.main_class,
+            src_dir: metadata.var_templates.src_dir
         }
-    }
+    },
+    {
+        name: "groovy",
+        build_tools: [
+            metadata.build_tools.gradle,
+            metadata.build_tools.maven
+        ],
+        templates:
+            {
+                main: "MainVerticle.groovy",
+                handler: "Handler.groovy",
+                security_handler: "SecurityHandler.groovy"
+            },
+        resources_dir: "src/resources",
+        dependencies: _.concat(metadata.dependencies.groovy_dependencies, [
+            {
+                group: "io.vertx",
+                artifact: "vertx-web",
+                version: constants.VERTX_VERSION
+            },
+            {
+                group: "io.vertx",
+                artifact: "vertx-web-api-contract",
+                version: constants.VERTX_VERSION
+            }
+        ]),
+        questions: [
+            metadata.questions.package
+        ],
+        var_templates: {
+            package: metadata.var_templates.package,
+            main: metadata.var_templates.main_class,
+            src_dir: metadata.var_templates.src_dir
+        }
+    },
 ];
 
 module.exports = {

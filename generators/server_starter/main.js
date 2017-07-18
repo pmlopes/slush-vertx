@@ -21,9 +21,9 @@ let languagesMetadata = [
             metadata.questions.package
         ],
         var_templates: {
-            main: "{package}.MainVerticle",
             package: metadata.var_templates.package,
-            src_dir: metadata.var_templates.java_src_dir
+            main: metadata.var_templates.main_class,
+            src_dir: metadata.var_templates.src_dir
         }
     },
     // { // TODO
@@ -58,8 +58,14 @@ let languagesMetadata = [
             "MainVerticle.groovy"
         ],
         dependencies: metadata.dependencies.groovy_dependencies,
-        main: "MainVerticle",
-        src_dir: path.join("src", "main", "groovy")
+        questions: [
+            metadata.questions.package
+        ],
+        var_templates: {
+            package: metadata.var_templates.package,
+            main: metadata.var_templates.main_class,
+            src_dir: metadata.var_templates.src_dir
+        }
     },
     {
         name: "ruby",
@@ -87,9 +93,9 @@ let languagesMetadata = [
             metadata.questions.package
         ],
         var_templates: {
-            main: "{package}.MainVerticle",
             package: metadata.var_templates.package,
-            src_dir: metadata.var_templates.kotlin_src_dir
+            main: metadata.var_templates.main_class,
+            src_dir: metadata.var_templates.src_dir
         }
     }
 ];

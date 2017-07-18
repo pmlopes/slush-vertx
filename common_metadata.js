@@ -3,6 +3,7 @@
  */
 
 var path = require('path');
+var constants = require('constants');
 
 module.exports = {
     build_tools: {
@@ -82,8 +83,8 @@ module.exports = {
         ]
     },
     var_templates: {
+        main_class: (language) => (language.package) ? language.package + ".MainVerticle" : "MainVerticle",
         package: (language) => language.package.trim().replace(/^\.+(.+)/, "").replace(/(.+)\.+$/, ""), // function to trim package name and remove left and side undesired points
-        java_src_dir: (language) => path.join(...(["src", "main", "java"].concat(language.package.split(".")))),
-        kotlin_src_dir: (language) => path.join(...(["src", "main", "kotlin"].concat(language.package.split("."))))
+        src_dir: (language) => path.join(...(["src", "main", language.name].concat(language.package.split("."))))
     }
 }
