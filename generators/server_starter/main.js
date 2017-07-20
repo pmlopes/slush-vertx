@@ -101,7 +101,7 @@ let languagesMetadata = [
 ];
 
 module.exports = {
-    name: "Server Starter project",
+    name: "Starter project",
     generate: function (project_info, done) {
         Utils.processLanguage(languagesMetadata).then((result) => {
             let language = result.language;
