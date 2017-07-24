@@ -12,7 +12,7 @@ public class MainVerticle extends AbstractVerticle {
 
   @Override
   public void start() {
-    OpenAPI3RouterFactory.createRouterFactoryFromURL(this.vertx, getClass().getResource("/{{ openapispec_filename }}").toString(), openAPI3RouterFactoryAsyncResult -> {
+    OpenAPI3RouterFactory.createRouterFactoryFromURL(this.vertx, getClass().getResource("/{{ openapispec_filename }}").toString(), false, openAPI3RouterFactoryAsyncResult -> {
       if (openAPI3RouterFactoryAsyncResult.succeeded()) {
         OpenAPI3RouterFactory routerFactory = openAPI3RouterFactoryAsyncResult.result();
 

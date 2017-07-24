@@ -5,9 +5,13 @@
 var fs = require('fs-extra');
 var path = require('path');
 var format = require("string-template");
+let _ = require('lodash');
 
 var Handlebars = require('handlebars');
-var helpers = require('handlebars-helpers')(['comparison']);
+var helpers = require('handlebars-helpers')();
+Handlebars.registerHelper('escape', function(variable) {
+    return variable.replace(/(['"])/g, '\\$1');
+});
 
 var inquirer = require('inquirer');
 
@@ -18,7 +22,8 @@ module.exports = class Utils {
     }
 
     static mergeObjs(obj1, obj2, overwrite) {
-        Object.keys(obj2).forEach((key) => { if (overwrite || obj1[key] == undefined) obj1[key] = obj2[key] } )
+        if (!_.isEmpty(obj2))
+            Object.keys(obj2).forEach((key) => { if (overwrite || obj1[key] == undefined) obj1[key] = obj2[key] } )
         return obj1
     }
 
@@ -72,32 +77,38 @@ module.exports = class Utils {
 
     static loadLanguageTemplates(generator_key, language_key, templates) {
         let result;
-        let languageDir = path.resolve(path.join(__dirname, "project_templates", generator_key, language_key));
+        let languageDir = path.resolve(path.join(__project_templates, generator_key, language_key));
         if (templates instanceof Array) {
             result = [];
             templates = templates.map((template) => path.join(languageDir, template));
             templates.forEach((templatePath) => {
                 let templateSource = fs.readFileSync(templatePath, 'utf-8');
-                result.push(Handlebars.compile(templateSource));
+                result.push(Handlebars.compile(templateSource, {noEscape: true}));
             });
         } else {
             result = {};
             Object.keys(templates).map((key) => {
                 let templateSource = fs.readFileSync(path.join(languageDir, templates[key]), 'utf-8');
-                result[key] = Handlebars.compile(templateSource);
+                result[key] = Handlebars.compile(templateSource, {noEscape: true});
             });
 
         }
         return result;
     }
 
+    static loadSingleTemplate(generator_key, language_key, template) {
+        let languageDir = path.resolve(path.join(__project_templates, generator_key, language_key));
+        let templateSource = fs.readFileSync(path.join(languageDir, template), 'utf-8');
+        return Handlebars.compile(templateSource, {noEscape: true});
+    }
+
     static loadBuildFilesTemplates(build_file_key, templates) {
         let result = [];
-        let buildFilesDir = path.resolve(path.join(__dirname, "build_files_templates", build_file_key));
+        let buildFilesDir = path.resolve(path.join(__build_files_templates, build_file_key));
         templates = templates.map((template) => path.join(buildFilesDir, template));
         templates.forEach((templatePath) => {
             let templateSource = fs.readFileSync(templatePath, 'utf-8');
-            result.push(Handlebars.compile(templateSource));
+            result.push(Handlebars.compile(templateSource, {noEscape: true}));
         });
         return result;
     }

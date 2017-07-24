@@ -1,19 +1,28 @@
-var fs = require('fs');
-var path = require('path');
-var exec = require('child_process').exec;
+let path = require('path');
 
-var gulp = require('gulp');
-var gutil = require('gulp-util');
-var inquirer = require('inquirer');
+/* Setting global dirs variables */
+global.__root = path.resolve(__dirname);
+global.__src = path.join(__root, "src");
+global.__project_templates = path.join(__root, "project_templates");
+global.__build_files_templates = path.join(__root, "build_files_templates");
 
-var Utils = require('./Utils.class');
+let fs = require('fs');
+let exec = require('child_process').exec;
+
+let gulp = require('gulp');
+let gutil = require('gulp-util');
+let inquirer = require('inquirer');
+let argv = require('minimist')(process.argv.slice(2));
+let _ = require('lodash');
+
+let Utils = require('./src/Utils.class');
 
 // Load generators
 var generators = [];
-fs.readdirSync(path.join(__dirname, "generators")).forEach((el) => {
+fs.readdirSync(path.join(__src, "generators")).forEach((el) => {
   try {
-      var gen = require(path.join(__dirname, "generators", el, "main.js"));
-      if (gen.hasOwnProperty("name") && gen.hasOwnProperty("generate"))
+      let gen = require(path.join(__src, "generators", el, "main.js"));
+      if (_.isString(gen.name) && _.isFunction(gen.generate) && (_.hasIn(argv, "hidden") || !_.hasIn(gen, "hidden") || gen.hidden == false)) //TODO FIX
           generators.push({name: gen.name, value: gen.generate});
   } catch (e) {
       console.error(e)
@@ -25,7 +34,6 @@ gulp.task('git', function (done) {
     if (error) {
       throw error;
     }
-
     done();
   });
 });

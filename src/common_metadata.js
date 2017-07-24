@@ -3,7 +3,7 @@
  */
 
 var path = require('path');
-var constants = require('constants');
+var constants = require('./constants');
 
 module.exports = {
     build_tools: {
@@ -27,6 +27,7 @@ module.exports = {
             message: "Which package name you want? "
         }
     },
+    resources_dir: path.join("src", "main","resources"),
     dependencies: {
         java_dependencies: [
             {

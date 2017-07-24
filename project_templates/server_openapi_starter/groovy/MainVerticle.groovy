@@ -12,7 +12,7 @@ class MainVerticle extends AbstractVerticle {
 
     @Override
     void start() {
-        OpenAPI3RouterFactory.createRouterFactoryFromURL(this.vertx, getClass().getResource("/petstore.yaml").toString(), {
+        OpenAPI3RouterFactory.createRouterFactoryFromURL(this.vertx, getClass().getResource("/petstore.yaml").toString(), false, {
             if (it.succeeded()) {
                 def routerFactory = it.result();
 

@@ -10,7 +10,7 @@ let oasConverter = require('swagger2openapi');
 let oasValidator = require('swagger2openapi/validate.js');
 
 let Utils = require('../../Utils.class');
-let OAS3Utils = require('../../OAS3Utils.class');
+let OAS3Utils = require('../../openapi/OAS3Utils.class');
 let constants = require('../../constants');
 let metadata = require('../../common_metadata');
 
@@ -25,9 +25,10 @@ let languagesMetadata = [
         {
             main: "MainVerticle.java",
             handler: "Handler.java",
-            security_handler: "SecurityHandler.java"
+            security_handler: "SecurityHandler.java",
+            test: "Test.java"
         },
-        resources_dir: "src/resources",
+        resources_dir: metadata.resources_dir,
         dependencies: _.concat(metadata.dependencies.java_dependencies, [
             {
                 group: "io.vertx",
@@ -60,7 +61,7 @@ let languagesMetadata = [
                 handler: "Handler.kt",
                 security_handler: "SecurityHandler.kt"
             },
-        resources_dir: "src/resources",
+        resources_dir: metadata.resources_dir,
         dependencies: _.concat(metadata.dependencies.java_dependencies, [
             {
                 group: "io.vertx",
@@ -94,7 +95,7 @@ let languagesMetadata = [
                 handler: "Handler.groovy",
                 security_handler: "SecurityHandler.groovy"
             },
-        resources_dir: "src/resources",
+        resources_dir: metadata.resources_dir,
         dependencies: _.concat(metadata.dependencies.groovy_dependencies, [
             {
                 group: "io.vertx",
@@ -150,7 +151,7 @@ module.exports = {
             if (!oasValidator.validateSync(oas, {}))
                 done(new gutil.PluginError('new', "OpenAPI 3 spec not valid!"));
 
-            let templatesFunctions = Utils.loadLanguageTemplates("server_openapi3_starter", language.name, language.templates);
+            let templatesFunctions = Utils.loadLanguageTemplates("server_openapi_starter", language.name, language.templates);
             let buildFilesTemplatesFunctions = Utils.loadBuildFilesTemplates(build_tool.name, build_tool.templates);
 
             project_info = Utils.buildProjectObject(project_info, language, build_tool);
@@ -214,7 +215,6 @@ module.exports = {
             Utils.writeFilesSync(srcPaths, srcFiles, language.src_dir);
             Utils.writeFilesSync(build_tool.templates, buildFiles);
 
-            fs.mkdirpSync(language.resources_dir);
             Utils.writeFilesSync([path.join(language.resources_dir, spec_filename)], [JSON.stringify(oasSerializable)]);
             done();
         }).catch(error => done(new gutil.PluginError('new', error)));

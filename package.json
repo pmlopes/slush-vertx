@@ -30,6 +30,7 @@
     "inquirer": "^3.2.0",
     "json-schema-ref-parser": "^3.1.2",
     "lodash": "^4.17.4",
+    "minimist": "^1.2.0",
     "string-template": "^1.0.0",
     "swagger2openapi": "^2.5.0"
   }
