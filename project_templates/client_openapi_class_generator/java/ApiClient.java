@@ -51,44 +51,59 @@ public class ApiClient {
         cookieParams = new CaseInsensitiveHeaders();
     }
 
-    {{#each operations}}
+    {{#forOwn operations}}
     {{#each functions}}
-    public void {{name}}({{#each ../parameters.path}}{{languageType}} {{name}},
-            {{/each}}{{#each ../parameters.cookie}}{{languageType}} {{name}},
-            {{/each}}{{#each ../parameters.query}}{{languageType}} {{name}},
-            {{/each}}{{#each ../parameters.header}}{{languageType}} {{name}},
-            {{/each}}
-            {{#if empty}}Handler<AsyncResult<HttpResponse>> handler{{else if json}}Object body, Handler<AsyncResult<HttpResponse>> handler{{else if form}}MultiMap form, Handler<AsyncResult<HttpResponse>> handler{{else if stream}}ReadStream<Buffer> stream, Handler<AsyncResult<HttpResponse>> handler{{else if buffer}}Buffer buffer, Handler<AsyncResult<HttpResponse>> handler{{else}}Handler<AsyncResult<HttpResponse>> handler{{/if}}) {
+    /**
+     * Call {{ ../operationId }} with {{#if json}}Json body{{else if form}}form {{contentType}} body{{else if stream}}{{contentType}} stream body{{else if buffer}}{{contentType}} buffer body{{else}}empty body{{/if}}. {{#if ../description}}
+     * {{description}}{{/if}}
+{{#each ../parameters.path}}     * @param {{name}} Parameter {{oasParameter.name}} inside path
+{{/each}}{{#each ../parameters.cookie}}     * @param {{name}} Parameter {{oasParameter.name}} inside cookie
+{{/each}}{{#each ../parameters.query}}     * @param {{name}} Parameter {{oasParameter.name}} inside query
+{{/each}}{{#each ../parameters.header}}     * @param {{name}} Parameter {{oasParameter.name}} inside header
+{{/each}}{{#if json}}     * @param body Json object or bean that represents the body of the request
+{{else if form}}     * @param form Form that represents the body of the request
+{{else if stream}}     * @param stream ReadStream that represents the body of the request
+{{else if buffer}}     * @param buffer Buffer that represents the body of the request
+{{else}}
+{{/if}}
+     * @param handler The handler for the asynchronous request
+     */
+    public void {{name}}(
+{{#each ../parameters.path}}        {{languageType}} {{name}},
+{{/each}}{{#each ../parameters.cookie}}        {{languageType}} {{name}},
+{{/each}}{{#each ../parameters.query}}        {{languageType}} {{name}},
+{{/each}}{{#each ../parameters.header}}        {{languageType}} {{name}},
+{{/each}}        {{#if empty}}Handler<AsyncResult<HttpResponse>> handler{{else if json}}Object body, Handler<AsyncResult<HttpResponse>> handler{{else if form}}MultiMap form, Handler<AsyncResult<HttpResponse>> handler{{else if stream}}ReadStream<Buffer> stream, Handler<AsyncResult<HttpResponse>> handler{{else if buffer}}Buffer buffer, Handler<AsyncResult<HttpResponse>> handler{{else}}Handler<AsyncResult<HttpResponse>> handler{{/if}}) {
         // Check required params
         {{#each ../parameters.path}}if ({{name}} == null) throw new RuntimeException("Missing parameter {{name}} in {{oasParameter.in}}");
-        {{/each}}{{#each ../parameters.cookie}}if ({{name}} == null) throw new RuntimeException("Missing parameter {{name}}");
-        {{/each}}{{#each ../parameters.query}}if ({{name}} == null) throw new RuntimeException("Missing parameter {{name}}");
-        {{/each}}{{#each ../parameters.header}}if ({{name}} == null) throw new RuntimeException("Missing parameter {{name}}");
-        {{/each}}
+        {{/each}}{{#each ../parameters.cookie}}{{#if required}}if ({{name}} == null) throw new RuntimeException("Missing parameter {{name}}");
+        {{/if}}{{/each}}{{#each ../parameters.query}}{{#if required}}if ({{name}} == null) throw new RuntimeException("Missing parameter {{name}}");
+        {{/if}}{{/each}}{{#each ../parameters.header}}{{#if required}}if ({{name}} == null) throw new RuntimeException("Missing parameter {{name}}");
+        {{/if}}{{/each}}
 
         // Generate the uri
         String uri = "{{../path}}";
         {{#each ../parameters.path}}uri = uri.replace("{{append (prepend oasParameter.name "{") "}"}}", this.{{renderFunctionName}}("{{oasParameter.name}}", {{name}}));
         {{/each}}
+
         HttpRequest request = client.get(uri);
 
         MultiMap requestCookies = new CaseInsensitiveHeaders();
-        {{#each ../parameters.cookie}}this.{{renderFunctionName}}("{{oasParameter.name}}", {{name}}, requestCookies);
-        {{/each}}{{#each ../parameters.header}}this.{{renderFunctionName}}("{{oasParameter.name}}", {{name}}, request);
-        {{/each}}{{#each ../parameters.query}}this.{{renderFunctionName}}("{{oasParameter.name}}", {{name}}, request);
-        {{/each}}
-        {{#if contentType}}this.addHeaderParam("Content-Type", {{contentType}}, request);{{/if}}
-
-        {{#if ../security}}{{#forOwn ../security}}this.attach{{capitalize .}}Security(request, requestCookies);
+        {{#each ../parameters.cookie}}if ({{name}} != null) this.{{renderFunctionName}}("{{oasParameter.name}}", {{name}}, requestCookies);
+        {{/each}}{{#each ../parameters.header}}if ({{name}} != null) this.{{renderFunctionName}}("{{oasParameter.name}}", {{name}}, request);
+        {{/each}}{{#each ../parameters.query}}if ({{name}} != null) this.{{renderFunctionName}}("{{oasParameter.name}}", {{name}}, request);
+        {{/each}}{{#if contentType}}this.addHeaderParam("Content-Type", {{contentType}}, request);
+        {{/if}}{{#if ../security}}{{#forOwn ../security}}this.attach{{capitalize .}}Security(request, requestCookies);
         {{/forOwn}}{{/if}}
 
+        this.renderAndAttachCookieHeader(request, requestCookies);
         {{#if empty}}request.send(handler);{{else if json}}request.sendJson(body, handler);{{else if form}}request.sendForm(form, handler);{{else if stream}}request.sendStream(stream, handler);{{else if buffer}}request.sendBuffer(buffer, handler);{{else}}request.send(handler);{{/if}}
-
     }
-    {{/each}}
-    {{/each}}
 
-    // Security requirements functions
+    {{/each}}
+    {{/forOwn}}
+
+    {{#if security_schemas}}// Security requirements functions
     {{#forOwn security_schemas}}
     private void attach{{capitalize sanitized_schema_name}}Security (HttpRequest request, MultiMap cookies) {
         {{#and (compare type '==' 'http') (compare type '==' 'basic')}}
@@ -98,19 +113,18 @@ public class ApiClient {
         this.addHeaderParam("Authorization", "Bearer " + {{sanitized_schema_name}}_token, request);
         {{/or}}{{#compare type '==' 'apiKey'}}
         {{#compare in '==' 'header'}}
-        this.addHeaderParam({{name}}, this.{{sanitized_schema_name}}_token, request);
+        this.addHeaderParam("{{name}}", this.{{sanitized_schema_name}}_token, request);
         {{/compare}}{{#compare in '==' 'cookie'}}
-        this.renderCookieParam({{name}}, this.{{sanitized_schema_name}}_token, cookies);
+        this.renderCookieParam("{{name}}", this.{{sanitized_schema_name}}_token, cookies);
         {{/compare}}{{#compare in '==' 'query'}}
-        this.addQueryParam({{name}}, this.{{sanitized_schema_name}}_token, request);
+        this.addQueryParam("{{name}}", this.{{sanitized_schema_name}}_token, request);
         {{/compare}}{{/compare}}
     }
 
-    {{/forOwn}}
-    // Security parameters functions
+    {{/forOwn}}{{/if}}{{#if security_schemas}}// Security parameters functions
     {{#forOwn security_schemas}}{{#and (compare type '==' 'http') (compare type '==' 'basic')}}
     /**
-     * Set username and password for security scheme {{@key}}
+     * Set username and password for basic http security scheme {{@key}}
      */
     public void set{{capitalize sanitized_schema_name}}Params(String username, String password) {
         this.{{sanitized_schema_name}}_username = username;
@@ -123,10 +137,15 @@ public class ApiClient {
     public void set{{capitalize sanitized_schema_name}}Token(String token) {
         this.{{sanitized_schema_name}}_token = token;
     }
-    {{/or}}{{/forOwn}}
+    {{/or}}{{/forOwn}}{{/if}}
 
     // Parameters functions
 
+    /**
+     * Remove a cookie parameter from the cookie cache
+     *
+     * @param paramName name of cookie parameter
+     */
     public void removeCookie(String paramName) {
         cookieParams.remove(paramName);
     }
@@ -135,6 +154,12 @@ public class ApiClient {
         request.addQueryParam(paramName, String.valueOf(value));
     }
 
+    /**
+     * Add a cookie param in cookie cache
+     *
+     * @param paramName name of cookie parameter
+     * @param value value of cookie parameter
+     */
     public void addCookieParam(String paramName, Object value) {
         renderCookieParam(paramName, value, cookieParams);
     }
@@ -401,10 +426,8 @@ public class ApiClient {
      * @return
      */
     private String renderPathObjectSimpleExplode(String paramName, Map<String, Object> values) {
-        String result = "";
-        for (Map.Entry<String, Object> value : values.entrySet())
-            result = result.concat("," + value.getKey() + "=" + encode(String.valueOf(value.getValue())));
-        return result;
+        return String.join(",",
+          values.entrySet().stream().map((entry) -> entry.getKey() + "=" + encode(String.valueOf(entry.getValue()))).collect(Collectors.toList()));
     }
 
     /**
@@ -460,6 +483,12 @@ public class ApiClient {
         map.add(paramName, value);
     }
 
+    /**
+     * Add a cookie array parameter in cookie cache
+     *
+     * @param paramName name of cookie parameter
+     * @param values list of values of cookie parameter
+     */
     public void addCookieArrayForm(String paramName, List<Object> values) {
         renderCookieArrayForm(paramName, values, cookieParams);
     }
@@ -485,6 +514,12 @@ public class ApiClient {
         map.add(paramName, value);
     }
 
+    /**
+     * Add a cookie object parameter in cookie cache
+     *
+     * @param paramName name of cookie parameter
+     * @param values map of values of cookie parameter
+     */
     public void addCookieObjectForm(String paramName, Map<String, Object> values) {
         renderCookieObjectForm(paramName, values, cookieParams);
     }
@@ -759,6 +794,10 @@ public class ApiClient {
         }
     }
 
+    /**
+     * Close the connection with server
+     *
+     */
     public void close() {
         client.close();
     }

@@ -107,8 +107,8 @@ module.exports = {
             let language = result.language;
             let build_tool = result.build_tool;
 
-            let templatesFunctions = Utils.loadLanguageTemplates("server_starter", language.name, language.templates);
-            let buildFilesTemplatesFunctions = Utils.loadBuildFilesTemplates(build_tool.name, build_tool.templates);
+            let templatesFunctions = Utils.loadGeneratorTemplates(language.templates, "server_starter", language.name);
+            let buildFilesTemplatesFunctions = Utils.loadBuildFilesTemplates(build_tool.templates, build_tool.name);
 
             project_info = Utils.buildProjectObject(project_info, language, build_tool);
 

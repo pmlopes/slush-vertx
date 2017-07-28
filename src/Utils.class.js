@@ -23,7 +23,7 @@ module.exports = class Utils {
 
     static mergeObjs(obj1, obj2, overwrite) {
         if (!_.isEmpty(obj2))
-            Object.keys(obj2).forEach((key) => { if (overwrite || obj1[key] == undefined) obj1[key] = obj2[key] } )
+            Object.keys(obj2).forEach((key) => { if (overwrite || obj1[key] == undefined) obj1[key] = obj2[key] } );
         return obj1
     }
 
@@ -75,12 +75,16 @@ module.exports = class Utils {
         });
     }
 
-    static loadLanguageTemplates(generator_key, language_key, templates) {
+    static loadGeneratorTemplates(templates, generator_key, language_key = null) {
         let result;
-        let languageDir = path.resolve(path.join(__project_templates, generator_key, language_key));
+        let templatesDir;
+        if (language_key)
+            templatesDir = path.resolve(path.join(__project_templates, generator_key, language_key));
+        else
+            templatesDir = path.resolve(path.join(__project_templates, generator_key));
         if (templates instanceof Array) {
             result = [];
-            templates = templates.map((template) => path.join(languageDir, template));
+            templates = templates.map((template) => path.join(templatesDir, template));
             templates.forEach((templatePath) => {
                 let templateSource = fs.readFileSync(templatePath, 'utf-8');
                 result.push(Handlebars.compile(templateSource, {noEscape: true}));
@@ -96,13 +100,17 @@ module.exports = class Utils {
         return result;
     }
 
-    static loadSingleTemplate(generator_key, language_key, template) {
-        let languageDir = path.resolve(path.join(__project_templates, generator_key, language_key));
-        let templateSource = fs.readFileSync(path.join(languageDir, template), 'utf-8');
+    static loadSingleTemplate(template, generator_key, language_key = undefined) {
+        let templatesDir;
+        if (language_key)
+            templatesDir = path.resolve(path.join(__project_templates, generator_key, language_key));
+        else
+            templatesDir = path.resolve(path.join(__project_templates, generator_key));
+        let templateSource = fs.readFileSync(path.join(templatesDir, template), 'utf-8');
         return Handlebars.compile(templateSource, {noEscape: true});
     }
 
-    static loadBuildFilesTemplates(build_file_key, templates) {
+    static loadBuildFilesTemplates(templates, build_file_key) {
         let result = [];
         let buildFilesDir = path.resolve(path.join(__build_files_templates, build_file_key));
         templates = templates.map((template) => path.join(buildFilesDir, template));

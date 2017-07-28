@@ -129,30 +129,17 @@ module.exports = {
                 message: "Choose the OpenAPI Specification (2.0 spec will be automatically converted to 3.0 spec): "
             })])
         }).then(results => {
-            return Promise.all([...results, deref.bundle(results[1].openapispec)]);
-        }).then(results => {
-            let load = new Promise((resolve, reject) => {
-                oasConverter.convert(results[2], {}, (err, result) => {
-                    if (err)
-                        reject(err);
-                    else
-                        resolve(result.openapi)
-                })
-            });
-            return Promise.all([...results, load])
+            return Promise.all([...results, OAS3Utils.resolveOpenAPISpec(results[1].openapispec, true)]);
         }).then(results => {
             let language = results[0].language;
             let build_tool = results[0].build_tool;
             let spec_path = results[1].openapispec;
             let spec_filename = path.basename(spec_path, path.extname(spec_path)) + ".json";
-            let oas = results[3];
-            let oasSerializable = _.cloneDeep(oas);
+            let oas = results[2][1];
+            let oasSerializable = results[2][0];
 
-            if (!oasValidator.validateSync(oas, {}))
-                done(new gutil.PluginError('new', "OpenAPI 3 spec not valid!"));
-
-            let templatesFunctions = Utils.loadLanguageTemplates("server_openapi_starter", language.name, language.templates);
-            let buildFilesTemplatesFunctions = Utils.loadBuildFilesTemplates(build_tool.name, build_tool.templates);
+            let templatesFunctions = Utils.loadGeneratorTemplates(language.templates, "server_openapi_starter", language.name);
+            let buildFilesTemplatesFunctions = Utils.loadBuildFilesTemplates(build_tool.templates, build_tool.name);
 
             project_info = Utils.buildProjectObject(project_info, language, build_tool);
             project_info.oas = oas;
@@ -217,6 +204,6 @@ module.exports = {
 
             Utils.writeFilesSync([path.join(language.resources_dir, spec_filename)], [JSON.stringify(oasSerializable)]);
             done();
-        }).catch(error => done(new gutil.PluginError('new', error)));
+        }).catch(error => done(new gutil.PluginError('new', error.stack)));
     }
 };

@@ -6,19 +6,41 @@ let _ = require('lodash');
 let metadata = require('./openapi_metadata');
 let Utils = require("../Utils.class");
 
+let deref = require('json-schema-ref-parser');
+let oasConverter = require('swagger2openapi');
+let oasValidator = require('swagger2openapi/validate.js');
+
 let sanitizeRegex = /([-\/.,_]+.)/g;
 let magicReplace = (s) => s.replace(sanitizeRegex, v => v.slice(v.length-1, v.length).toUpperCase());
 
 module.exports = class OAS3Utils {
+    static resolveOpenAPISpec(openapispec, validate = false) {
+        return deref.bundle(openapispec).then(result => {
+            return new Promise((resolve, reject) => {
+                oasConverter.convert(result, {resolve: false}, (err, result) => {
+                    if (err)
+                        reject(err);
+                    else {
+                        if (!validate || oasValidator.validateSync(result.openapi, {}))
+                            resolve(result.openapi);
+                        else
+                            reject(new Error("OpenAPI 3 spec invalid"))
+                    }
+                })
+            });
+        }).then(result => Promise.all([deref.bundle(_.cloneDeep(result)), deref.dereference(result)]));
+    }
+
     static getPathsByOperationIds(oas) {
         let result = {};
         for (var key in oas.paths) {
             for (var method in oas.paths[key]) {
                 let operationId = oas.paths[key][method].operationId;
-                oas.paths[key][method].parameters = Utils.mergeObjs(oas.paths[key][method].parameters, oas.paths[key].parameters, false);
+                oas.paths[key][method].parameters = _.unionBy(oas.paths[key][method].parameters, oas.paths[key].parameters, "name");
                 result[operationId] = oas.paths[key][method];
                 result[operationId]['method'] = method;
                 result[operationId]['path'] = key;
+                result[operationId]['operationId'] = operationId;
             }
         }
         return result;
@@ -29,8 +51,9 @@ module.exports = class OAS3Utils {
     }
 
     static sanitizeParameterName(oasName) {
-        oasName = oasName.trim();
-        return magicReplace(oasName);
+        oasName = magicReplace(oasName.trim())
+
+        return oasName.charAt(0).toLowerCase() + oasName.slice(1);
     }
 
     static sanitizeContentType(contentType) {
@@ -78,19 +101,16 @@ module.exports = class OAS3Utils {
             cookie: []
         };
 
-        if (!_.has(operation, "parameters"))
-            return result;
-
-        operation.parameters.forEach((e) => {
-            var p = {
-                "name": OAS3Utils.sanitizeParameterName(e.name),
-                "languageType": OAS3Utils.resolveType(language, e.schema.type, e.schema.format),
-                "oasParameter": e,
-                "required": e.required,
-                "renderFunctionName": OAS3Utils.resolveFunctionsNamesForParameterRendering(language, e.in, e.schema.type, e.style, e.explode)
-            };
-            result[e.in].push(p);
-        });
+        if (operation.parameters)
+            _.forEach(operation.parameters, (e) => {
+                    result[e.in].push({
+                        "name": OAS3Utils.sanitizeParameterName(e.name),
+                        "languageType": OAS3Utils.resolveType(language, e.schema.type, e.schema.format),
+                        "oasParameter": e,
+                        "required": e.required,
+                        "renderFunctionName": OAS3Utils.resolveFunctionsNamesForParameterRendering(language, e.in, e.schema.type, e.style, e.explode)
+                    });
+            });
 
         return result;
     }

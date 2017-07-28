@@ -1,18 +1,15 @@
 let fs = require('fs-extra');
 let path = require('path');
-let Handlebars = require('handlebars');
-// let ajv = new require('ajv')();
-// ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-04.json'));
-let deref = require('json-schema-ref-parser');
 let _ = require('lodash');
 let gutil = require('gulp-util');
-let oasConverter = require('swagger2openapi');
-let oasValidator = require('swagger2openapi/validate.js');
+let deref = require('json-schema-ref-parser');
 
 let Utils = require('../../Utils.class');
 let OAS3Utils = require('../../openapi/OAS3Utils.class');
 let constants = require('../../constants');
 let metadata = require('../../common_metadata');
+
+let clientGenerator = require(path.join(__src, "generators", "client_openapi_class_generator", "main.js")).generateWithoutPrompt;
 
 let languagesMetadata = [
     {
@@ -126,9 +123,31 @@ module.exports = {
                 message: "Choose the OpenAPI Specification (2.0 spec will be automatically converted to 3.0 spec): "
             })])
         }).then(results => {
-            project_info = Utils.buildProjectObject(project_info, results[0].language, results[0].build_tool);
-            require("../client_openapi_class_generator/main")
-                .generateWithoutPrompt(project_info, results[1].openapispec, done);
-        }).catch(error => done(new gutil.PluginError('new', error)));
+            return Promise.all([...results, OAS3Utils.resolveOpenAPISpec(results[1].openapispec, true)]);
+        }).then(results => {
+            let language = results[0].language;
+            let build_tool = results[0].build_tool;
+            let spec_path = results[1].openapispec;
+            let spec_filename = path.basename(spec_path, path.extname(spec_path)) + ".json";
+            let oas = results[2][1];
+            let oasSerializable = results[2][0];
+            let docTemplates = ["README.md", "Operations.md"];
+
+            project_info = Utils.buildProjectObject(project_info, language, build_tool);
+            let info = clientGenerator(project_info, oas);
+
+            let docTemplatesFunctions = Utils.loadGeneratorTemplates(docTemplates, "client_openapi_generator");
+            let docFiles = _.mapValues(docTemplatesFunctions, (template) => template(info));
+
+            let buildFilesTemplatesFunctions = Utils.loadBuildFilesTemplates(build_tool.templates, build_tool.name);
+            let buildFiles = buildFilesTemplatesFunctions.map((template) => template(project_info));
+
+            Utils.writeFilesSync(docTemplates, docFiles);
+            Utils.writeFilesSync(build_tool.templates, buildFiles);
+
+            Utils.writeFilesSync([path.join(language.resources_dir, spec_filename)], [JSON.stringify(oasSerializable)]);
+
+            done();
+        }).catch(error => done(new gutil.PluginError('new', error.stack)));
     }
 };

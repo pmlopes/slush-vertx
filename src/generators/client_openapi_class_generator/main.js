@@ -9,86 +9,69 @@ let oasValidator = require('swagger2openapi/validate.js');
 let Utils = require('../../Utils.class');
 let OAS3Utils = require('../../openapi/OAS3Utils.class');
 
-var generateWithoutPrompt = function (project_info, openapispec, done) {
-    deref.bundle(openapispec).then(result => {
-        return new Promise((resolve, reject) => {
-            oasConverter.convert(result, {}, (err, result) => {
-                if (err)
-                    reject(err);
-                else
-                    resolve(result.openapi)
-            })
-        });
-    }).then(result => deref.dereference(result)).then(result => {
-        let oas = result;
+var generateWithoutPrompt = function (project_info, oas_deferenced) {
+    let oas = oas_deferenced;
 
-        // if (!oasValidator.validateSync(oas, {}))
-        //     done(new gutil.PluginError('new', "OpenAPI 3 spec not valid!"));
-        // Assume that is already validated
+    let renderClient = Utils.loadSingleTemplate(project_info.templates.client, "client_openapi_class_generator", project_info.language);
 
-        let renderClient = Utils.loadSingleTemplate("client_openapi_class_generator", project_info.language, project_info.templates.client);
+    operations = OAS3Utils.getPathsByOperationIds(oas);
 
-        operations = OAS3Utils.getPathsByOperationIds(oas);
+    Object.keys(operations).forEach(key => {
+        let baseFunctionName = OAS3Utils.sanitizeOperationId(key);
 
-        Object.keys(operations).forEach(key => {
-            let baseFunctionName = OAS3Utils.sanitizeOperationId(key);
+        let functions = [];
 
-            let functions = [];
-
-            if (_.isEmpty(operations[key].requestBody)) {
-                functions.push({name: baseFunctionName, empty: true});
-            } else {
-                functions.push({name: baseFunctionName + "WithEmptyBody", empty: true});
-                _.forOwn(operations[key].requestBody, (value, key) => {
-                    if (key == "application/json")
-                        functions.push({name: baseFunctionName + "WithJson", json: true, contentType: key});
-                    else if (key == "multipart/form-data")
-                        functions.push({name: baseFunctionName + "WithMultipartForm", form: true, contentType: key});
-                    else if (key == "application/x-www-form-urlencoded")
-                        functions.push({name: baseFunctionName + "WithForm", form: true, contentType: key});
-                    else {
-                        functions.push({
-                            name: baseFunctionName + "With" + OAS3Utils.sanitizeContentType(key) + "Buffer",
-                            buffer: true,
-                            contentType: key
-                        });
-                        functions.push({
-                            name: baseFunctionName + "With" + OAS3Utils.sanitizeContentType(key) + "Stream",
-                            stream: true,
-                            contentType: key
-                        });
-                    }
-                });
-            }
-
-            let securityRequirements = _.get(operations[key], 'security');
-            if (securityRequirements)
-                operations[key].security = _.mapValues(securityRequirements, (key) => OAS3Utils.sanitizeSecuritySchemaName(key));
-
-            operations[key].functions = functions;
-            operations[key].parameters = OAS3Utils.extractParametersWithTypes(operations[key], project_info.language);
-        });
-
-        let securitySchemas = _.get(oas, 'components.securitySchemes');
-        if (securitySchemas) {
-            Object.keys(securitySchemas).forEach(key => {
-                securitySchemas[key].sanitized_schema_name = OAS3Utils.sanitizeSecuritySchemaName(key);
+        if (!_.has(operations[key], "requestBody.content") || _.isEmpty(operations[key].requestBody.content)) {
+            functions.push({name: baseFunctionName, empty: true});
+        } else {
+            functions.push({name: baseFunctionName + "WithEmptyBody", empty: true});
+            _.forOwn(operations[key].requestBody.content, (value, key) => {
+                if (key == "application/json")
+                    functions.push({name: baseFunctionName + "WithJson", json: true, contentType: key});
+                else if (key == "multipart/form-data")
+                    functions.push({name: baseFunctionName + "WithMultipartForm", form: true, contentType: key});
+                else if (key == "application/x-www-form-urlencoded")
+                    functions.push({name: baseFunctionName + "WithForm", form: true, contentType: key});
+                else {
+                    functions.push({
+                        name: baseFunctionName + "With" + OAS3Utils.sanitizeContentType(key) + "Buffer",
+                        buffer: true,
+                        contentType: key
+                    });
+                    functions.push({
+                        name: baseFunctionName + "With" + OAS3Utils.sanitizeContentType(key) + "Stream",
+                        stream: true,
+                        contentType: key
+                    });
+                }
             });
         }
 
-        let info = {
-            project_info: project_info,
-            operations: operations,
-            oas: oas
-        };
+        let securityRequirements = operations[key].security;
+        if (securityRequirements)
+            operations[key].security = _.mapValues(_.keyBy(_.flatten(_.map(securityRequirements, (value) => _.keys(value)))), (value) => OAS3Utils.sanitizeSecuritySchemaName(value));
 
-        if (securitySchemas)
-            info.security_schemas = securitySchemas;
+        operations[key].functions = functions;
+        operations[key].parameters = OAS3Utils.extractParametersWithTypes(operations[key], project_info.language);
+    });
 
-        Utils.writeFilesSync([project_info.templates.client], [renderClient(info)], project_info.src_dir);
+    let securitySchemas = _.get(oas, 'components.securitySchemes');
+    _.forOwn(securitySchemas, (value, key) => {
+            securitySchemas[key].sanitized_schema_name = OAS3Utils.sanitizeSecuritySchemaName(key);
+    });
 
-        done();
-    }).catch(error => done(new gutil.PluginError('new', error.stack)));
+    let info = {
+        project_info: project_info,
+        operations: operations,
+        oas: oas
+    };
+
+    if (securitySchemas)
+        info.security_schemas = securitySchemas;
+
+    Utils.writeFilesSync([project_info.templates.client], [renderClient(info)], project_info.src_dir);
+
+    return info;
 }
 
 module.exports = {

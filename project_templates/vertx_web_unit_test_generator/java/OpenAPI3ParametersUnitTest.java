@@ -3,12 +3,15 @@
 {{/if}}import com.reprezen.kaizen.oasparser.OpenApiParser;
 import com.reprezen.kaizen.oasparser.model3.OpenApi3;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.RequestParameter;
 import io.vertx.ext.web.RequestParameters;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.client.HttpResponse;
-import io.vertx.ext.web.designdriven.openapi3.impl.OpenAPI3RequestValidationHandlerImpl;
+import io.vertx.ext.web.designdriven.openapi3.impl.OpenAPI3RouterFactoryImpl;
 import io.vertx.ext.web.validation.WebTestValidationBase;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,11 +31,8 @@ import java.util.stream.Collectors;
 public class OpenAPI3ParametersUnitTest extends WebTestValidationBase {
 
   OpenApi3 spec;
-  ApiClient client;
-
-  private OpenApi3 loadSwagger(String filename) {
-    return (OpenApi3) new OpenApiParser().parse(new File(filename), false);
-  }
+  ApiClient apiClient;
+  OpenAPI3RouterFactory routerFactory;
 
   @Rule
   public ExternalResource resource = new ExternalResource() {
@@ -46,15 +46,26 @@ public class OpenAPI3ParametersUnitTest extends WebTestValidationBase {
   };
 
   @Override
-    public void setUp() throws Exception {
-      super.setUp();
-      client = new ApiClient(webClient);
-    }
+  public void setUp() throws Exception {
+    super.setUp();
+    stopServer(); // Have to stop default server of WebTestBase
+    apiClient = new ApiClient(webClient);
+    routerFactory = new OpenAPI3RouterFactoryImpl(this.vertx, spec);
+    routerFactory.enableValidationFailureHandler(true);
+    routerFactory.setValidationFailureHandler(generateFailureHandler());
+    routerFactory.mountOperationsWithoutHandlers(false);
+  }
 
-    @Override
-    public void tearDown() throws Exception {
-      super.tearDown();
+  @Override
+  public void tearDown() throws Exception {
+    if (apiClient != null) {
+      try {
+        apiClient.close();
+      } catch (IllegalStateException e) {}
     }
+    stopServer();
+    super.tearDown();
+  }
 
 
   {{#forOwn operations}}
@@ -67,8 +78,7 @@ public class OpenAPI3ParametersUnitTest extends WebTestValidationBase {
    */
   @Test
   public void test{{capitalize sanitized_operation_id}}() throws Exception {
-    OpenAPI3RequestValidationHandler validationHandler = new OpenAPI3RequestValidationHandlerImpl(spec.getPath("{{path}}").get{{capitalize method}}(), null);
-    router.{{method}}("{{path}}").handler(validationHandler).handler(routingContext -> {
+    routerFactory.addHandlerByOperationId("{{operationId}}", routingContext -> {
       RequestParameters params = routingContext.get("parsedParameters");
       JsonObject res = new JsonObject();
 
@@ -94,7 +104,7 @@ public class OpenAPI3ParametersUnitTest extends WebTestValidationBase {
         .setStatusMessage("OK")
         .putHeader("content-type", "application/json; charset=utf-8")
         .end(res.encode());
-    }).failureHandler(generateFailureHandler(false));
+    });
 
     CountDownLatch latch = new CountDownLatch(1);
 
@@ -110,7 +120,9 @@ public class OpenAPI3ParametersUnitTest extends WebTestValidationBase {
     {{/forOwn}}
     {{/compare}}{{/each}}
 
-    client.{{sanitized_operation_id}}({{#each parameters}}{{sanitized_name}}_{{in}}, {{/each}}(AsyncResult<HttpResponse> ar) -> {
+    startServer();
+
+    apiClient.{{sanitized_operation_id}}({{#each parameters}}{{sanitized_name}}_{{in}}, {{/each}}(AsyncResult<HttpResponse> ar) -> {
       if (ar.succeeded()) {
         assertEquals(200, ar.result().statusCode());
         assertTrue("Expected: " + new JsonObject("{{escape exampleResponse}}").encode() + " Actual: " + ar.result().bodyAsJsonObject().encode(), new JsonObject("{{escape exampleResponse}}").equals(ar.result().bodyAsJsonObject()));
@@ -124,4 +136,40 @@ public class OpenAPI3ParametersUnitTest extends WebTestValidationBase {
   }
 
   {{/forOwn}}
+
+  private OpenApi3 loadSwagger(String filename) {
+    return (OpenApi3) new OpenApiParser().parse(new File(filename), false);
+  }
+
+  public Handler<RoutingContext> generateFailureHandler() {
+    return routingContext -> {
+      Throwable failure = routingContext.failure();
+      failure.printStackTrace();
+      assertTrue(failure.getMessage(), false);
+    };
+  }
+
+  private void startServer() throws Exception {
+    router = routerFactory.getRouter();
+    server = this.vertx.createHttpServer(new HttpServerOptions().setPort(8080).setHost("localhost"));
+    CountDownLatch latch = new CountDownLatch(1);
+    server.requestHandler(router::accept).listen(onSuccess(res -> {
+      latch.countDown();
+    }));
+    awaitLatch(latch);
+  }
+
+  private void stopServer() throws Exception {
+    if (server != null) {
+      CountDownLatch latch = new CountDownLatch(1);
+      try {
+        server.close((asyncResult) -> {
+          latch.countDown();
+        });
+      } catch (IllegalStateException e) { // Server is already open
+        latch.countDown();
+      }
+      awaitLatch(latch);
+    }
+  }
 }
