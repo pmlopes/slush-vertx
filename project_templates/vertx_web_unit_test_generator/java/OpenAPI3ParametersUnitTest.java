@@ -72,8 +72,8 @@ public class OpenAPI3ParametersUnitTest extends WebTestValidationBase {
   /**
    * Test: {{@key}}
    * Expected parameters sent:
-   {{#each parameters}}* {{name}}: {{examples.spec.value}}
-   {{/each}}* Expected response: {{exampleResponse}}
+{{#each parameters}}   * {{name}}: {{examples.spec.value}}
+{{/each}}   * Expected response: {{exampleResponse}}
    * @throws Exception
    */
   @Test
@@ -85,14 +85,14 @@ public class OpenAPI3ParametersUnitTest extends WebTestValidationBase {
       {{#each parameters}}
       RequestParameter {{sanitized_name}}_{{in}} = params.{{in}}Parameter("{{name}}");
       assertNotNull({{sanitized_name}}_{{in}});
-      {{#compare x-test '==' 'empty'}}assertTrue({{sanitized_name}}_{{in}}.isEmpty());
+{{#compare x-test '==' 'empty'}}      assertTrue({{sanitized_name}}_{{in}}.isEmpty());
       res.putNull("{{name}}");
-      {{/compare}}{{#compare x-test '==' 'string'}}assertTrue({{sanitized_name}}_{{in}}.isString());
+{{/compare}}{{#compare x-test '==' 'string'}}      assertTrue({{sanitized_name}}_{{in}}.isString());
       assertEquals({{sanitized_name}}_{{in}}.getString(), "{{examples.value.value}}");
       res.put("{{name}}", {{sanitized_name}}_{{in}}.getString());
-      {{/compare}}{{#compare x-test '==' 'array'}}assertTrue({{sanitized_name}}_{{in}}.isArray());
+{{/compare}}{{#compare x-test '==' 'array'}}      assertTrue({{sanitized_name}}_{{in}}.isArray());
       res.put("{{name}}", new JsonArray({{sanitized_name}}_{{in}}.getArray().stream().map(param -> param.getString()).collect(Collectors.toList())));
-      {{/compare}}{{#compare x-test '==' 'object'}}assertTrue({{sanitized_name}}_{{in}}.isObject());
+{{/compare}}{{#compare x-test '==' 'object'}}      assertTrue({{sanitized_name}}_{{in}}.isObject());
       Map<String, String> map = new HashMap<>();
       for (String key : {{sanitized_name}}_{{in}}.getObjectKeys())
         map.put(key, {{sanitized_name}}_{{in}}.getObjectValue(key).getString());
@@ -110,15 +110,14 @@ public class OpenAPI3ParametersUnitTest extends WebTestValidationBase {
 
     {{#each parameters}}
     {{languageType}} {{sanitized_name}}_{{in}};
-    {{#compare x-test '==' 'empty'}}{{sanitized_name}}_{{in}} = "";
-    {{/compare}}{{#compare x-test '==' 'string'}}{{sanitized_name}}_{{in}} = "{{examples.value.value}}";
-    {{/compare}}{{#compare x-test '==' 'array'}}{{sanitized_name}}_{{in}} = new ArrayList<>();
-    {{#each examples.value.value}}{{../sanitized_name}}_{{../in}}.add("{{.}}");
-    {{/each}}
-    {{/compare}}{{#compare x-test '==' 'object'}}{{sanitized_name}}_{{in}} = new HashMap<>();
-    {{#forOwn examples.value.value}}{{../sanitized_name}}_{{../in}}.put("{{@key}}", "{{.}}");
-    {{/forOwn}}
-    {{/compare}}{{/each}}
+{{#compare x-test '==' 'empty'}}    {{sanitized_name}}_{{in}} = "";
+{{/compare}}{{#compare x-test '==' 'string'}}    {{sanitized_name}}_{{in}} = "{{examples.value.value}}";
+{{/compare}}{{#compare x-test '==' 'array'}}    {{sanitized_name}}_{{in}} = new ArrayList<>();
+{{#each examples.value.value}}    {{../sanitized_name}}_{{../in}}.add("{{.}}");
+{{/each}}
+{{/compare}}{{#compare x-test '==' 'object'}}    {{sanitized_name}}_{{in}} = new HashMap<>();
+{{#forOwn examples.value.value}}    {{../sanitized_name}}_{{../in}}.put("{{@key}}", "{{.}}");
+{{/forOwn}}{{/compare}}{{/each}}
 
     startServer();
 
