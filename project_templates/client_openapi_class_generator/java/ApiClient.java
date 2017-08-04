@@ -20,9 +20,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.Base64;
 
-/**
- * @author Francesco Guardiani @slinkydeveloper
- */
 public class ApiClient {
     private WebClient client;
     private int port;
@@ -267,7 +264,7 @@ public class ApiClient {
      * @return
      */
     private String renderPathArrayMatrixExplode(String paramName, List<Object> values) {
-        return String.join(",", values.stream().map(object -> ";" + paramName + "=" + encode(String.valueOf(object))).collect(Collectors.toList()));
+        return String.join("", values.stream().map(object -> ";" + paramName + "=" + encode(String.valueOf(object))).collect(Collectors.toList()));
     }
 
     /**
@@ -282,7 +279,7 @@ public class ApiClient {
      * @return
      */
     private String renderPathObjectMatrixExplode(String paramName, Map<String, Object> values) {
-        return String.join(",", values.keySet().stream().map(object -> ";" + paramName + "=" + encode(String.valueOf(object))).collect(Collectors.toList()));
+        return String.join("", values.keySet().stream().map(object -> ";" + paramName + "=" + encode(String.valueOf(object))).collect(Collectors.toList()));
     }
 
     /**
