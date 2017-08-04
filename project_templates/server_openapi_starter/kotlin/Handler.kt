@@ -4,7 +4,7 @@ import io.vertx.core.Handler
 import io.vertx.ext.web.RequestParameters
 import io.vertx.ext.web.RoutingContext
 
-class {{ class_name }} : Handler<RoutingContext> {
+class {{ operation.class_name }} : Handler<RoutingContext> {
     override fun handle(routingContext: RoutingContext) {
         {{#if renderParams}}var params: RequestParameters = routingContext.get("parsedParameters")
         {{/if}}// Handle {{ operation.operationId }}

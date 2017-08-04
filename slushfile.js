@@ -22,7 +22,7 @@ var generators = [];
 fs.readdirSync(path.join(__src, "generators")).forEach((el) => {
   try {
       let gen = require(path.join(__src, "generators", el, "main.js"));
-      if (_.isString(gen.name) && _.isFunction(gen.generate) && (_.hasIn(argv, "hidden") || !_.hasIn(gen, "hidden") || gen.hidden == false)) //TODO FIX
+      if (_.isString(gen.name) && _.isFunction(gen.generate) && (_.hasIn(argv, "hidden") || !_.hasIn(gen, "hidden") || gen.hidden == false))
           generators.push({name: gen.name, value: gen.generate});
   } catch (e) {
       console.error(e)
@@ -38,7 +38,7 @@ gulp.task('git', function (done) {
   });
 });
 
-gulp.task('new', ['git'], function (done) {
+gulp.task('new', function (done) {
 
     var project_info = {};
 
@@ -62,4 +62,8 @@ gulp.task('new', ['git'], function (done) {
     });
 });
 
-gulp.task('default', ['new']);
+if (_.hasIn(argv, "nogit"))
+    gulp.task('default', ['new']);
+else
+    gulp.task('default', ['git', 'new']);
+

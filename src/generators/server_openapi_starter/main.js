@@ -119,10 +119,83 @@ let languagesMetadata = [
     },
 ];
 
+function render(project_info) {
+    let result = [];
+
+    let templatesFunctions = Utils.loadGeneratorTemplates(project_info.templates, "server_openapi_starter", project_info.language);
+    let buildFilesTemplatesFunctions = Utils.loadBuildFilesTemplates(project_info.build_tool.templates, project_info.build_tool.name);
+
+    // Generate operations handlers
+    operations = OAS3Utils.getPathsByOperationIds(project_info.oas);
+    _.forOwn(operations, (operation, key) => {
+        operation.class_name = OAS3Utils.getClassNameFromOperationId(key, "Handler");
+
+        let handler_info = {
+            project_info: project_info,
+            operation: operations[key]
+        };
+        if (!_.isEmpty(operations[key].parameters) || !_.isEmpty(operations[key].requestBody)) handler_info.renderParams = true;
+
+        result.push({
+            path: path.join(project_info.src_dir, "handlers", operation.class_name + path.extname(project_info.templates.handler)),
+            content: templatesFunctions.handler(handler_info)
+        });
+    });
+
+    // Generate security schema handlers
+    let securitySchemas = _.get(project_info.oas, 'components.securitySchemes');
+    if (securitySchemas) {
+        _.forOwn(securitySchemas, (securitySchema, key) => {
+            securitySchema.class_name = OAS3Utils.getClassNameFromOperationId(key, "SecurityHandler");
+            securitySchema.schema_name = key;
+
+            let security_handler_info = {
+                project_info: project_info,
+                security_schema: securitySchema
+            };
+
+            result.push({
+                path: path.join(project_info.src_dir, "securityHandlers", securitySchema.class_name + path.extname(project_info.templates.security_handler)),
+                content: templatesFunctions.security_handler(security_handler_info)
+            });
+        });
+    }
+
+    // Generate main verticle
+    let main_info = {
+        project_info: project_info,
+        operations: operations
+    };
+    if (securitySchemas)
+        main_info.security_schemas = _.values(securitySchemas); // Convert from object to array
+
+    result.push({
+        path: path.join(project_info.src_dir, project_info.templates.main),
+        content: templatesFunctions.main(main_info)
+    });
+
+    // Some lodash magic
+    return _.concat(
+        // Source files
+        result,
+        // OpenAPI spec
+        {
+            path: path.join(project_info.resources_dir, project_info.spec_filename),
+            content: JSON.stringify(project_info.oasSerializable)
+        },
+        // Build files
+        _.zipWith(
+            project_info.build_tool.templates,
+            buildFilesTemplatesFunctions.map(template => template(project_info)),
+            (path, content) => new Object({path: path, content: content})
+        )
+    )
+}
+
 module.exports = {
     name: "Server OpenAPI project",
     generate: function (project_info, done) {
-        Utils.processLanguage(languagesMetadata).then(result => {
+        Utils.processLanguage(languagesMetadata, project_info).then(result => {
             return Promise.all([result, Utils.processQuestions({
                 type: 'input',
                 name: 'openapispec',
@@ -131,79 +204,20 @@ module.exports = {
         }).then(results => {
             return Promise.all([...results, OAS3Utils.resolveOpenAPISpec(results[1].openapispec, true)]);
         }).then(results => {
-            let language = results[0].language;
-            let build_tool = results[0].build_tool;
-            let spec_path = results[1].openapispec;
-            let spec_filename = path.basename(spec_path, path.extname(spec_path)) + ".json";
-            let oas = results[2][1];
-            let oasSerializable = results[2][0];
+            // Build project_info object
+            let project_info = results[0].project_info;
+            project_info.spec_path = results[1].openapispec;
+            project_info.spec_filename = path.basename(project_info.spec_path, path.extname(project_info.spec_path)) + ".json";
+            project_info.oas = results[2][1];
+            project_info.oasSerializable = results[2][0];
 
-            let templatesFunctions = Utils.loadGeneratorTemplates(language.templates, "server_openapi_starter", language.name);
-            let buildFilesTemplatesFunctions = Utils.loadBuildFilesTemplates(build_tool.templates, build_tool.name);
+            let files = render(project_info);
 
-            project_info = Utils.buildProjectObject(project_info, language, build_tool);
-            project_info.oas = oas;
+            //Write files
+            Utils.writeFilesArraySync(files);
 
-            operations = OAS3Utils.getPathsByOperationIds(oas);
-
-            let srcFiles = [];
-            let srcPaths = [];
-
-            Object.keys(operations).forEach(key => {
-                let class_name = OAS3Utils.getClassNameFromOperationId(key, "Handler");
-                operations[key].class_name = class_name;
-
-                let info = {
-                    project_info: project_info,
-                    operation: operations[key],
-                    class_name: class_name
-                };
-
-                if (!_.isEmpty(operations[key].parameters) || !_.isEmpty(operations[key].requestBody))
-                    info.renderParams = true;
-
-                srcFiles.push(templatesFunctions.handler(info));
-                srcPaths.push(path.join("handlers", class_name + path.extname(language.templates.handler)))
-            });
-
-            let securitySchemas = _.get(oas, 'components.securitySchemes');
-            if (securitySchemas) {
-                Object.keys(securitySchemas).forEach(key => {
-                    let class_name = OAS3Utils.getClassNameFromOperationId(key, "SecurityHandler");
-                    securitySchemas[key].class_name = class_name;
-
-                    securitySchemas[key].schema_name = key;
-
-                    let info = {
-                        project_info: project_info,
-                        security_schema: securitySchemas[key],
-                        class_name: class_name
-                    };
-
-                    srcFiles.push(templatesFunctions.security_handler(info));
-                    srcPaths.push(path.join("securityHandlers", class_name + path.extname(language.templates.security_handler)))
-                });
-            }
-
-            let info = {
-                project_info: project_info,
-                operations: operations,
-                openapispec_filename: spec_filename
-            };
-
-            if (securitySchemas)
-                info.security_schemas = _.values(securitySchemas); // Convert from object to array
-
-            srcFiles.push(templatesFunctions.main(info));
-            srcPaths.push(language.templates.main);
-
-            let buildFiles = buildFilesTemplatesFunctions.map((template) => template(project_info));
-
-            Utils.writeFilesSync(srcPaths, srcFiles, language.src_dir);
-            Utils.writeFilesSync(build_tool.templates, buildFiles);
-
-            Utils.writeFilesSync([path.join(language.resources_dir, spec_filename)], [JSON.stringify(oasSerializable)]);
             done();
         }).catch(error => done(new gutil.PluginError('new', error.stack)));
-    }
+    },
+    render: render
 };

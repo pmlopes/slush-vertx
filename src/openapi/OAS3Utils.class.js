@@ -36,11 +36,11 @@ module.exports = class OAS3Utils {
         for (var key in oas.paths) {
             for (var method in oas.paths[key]) {
                 let operationId = oas.paths[key][method].operationId;
-                oas.paths[key][method].parameters = _.unionBy(oas.paths[key][method].parameters, oas.paths[key].parameters, "name");
-                result[operationId] = oas.paths[key][method];
-                result[operationId]['method'] = method;
-                result[operationId]['path'] = key;
-                result[operationId]['operationId'] = operationId;
+                result[operationId] = _.cloneDeep(oas.paths[key][method]);
+                result[operationId]['parameters'] = _.unionBy(result[operationId]['parameters'], oas.paths[key].parameters, "name");
+                result[operationId]['method'] = _.clone(method);
+                result[operationId]['path'] = _.clone(key);
+                result[operationId]['operationId'] = _.clone(operationId);
             }
         }
         return result;

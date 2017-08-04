@@ -11,7 +11,7 @@ class MainVerticle : AbstractVerticle() {
     var server: HttpServer? = null
 
     override fun start() {
-        OpenAPI3RouterFactory.createRouterFactoryFromURL(vertx, MainVerticle::class.java.getResource("/{{ openapispec_filename }}").toString(), false, { openAPI3RouterFactoryAsyncResult ->
+        OpenAPI3RouterFactory.createRouterFactoryFromURL(vertx, MainVerticle::class.java.getResource("/{{ project_info.spec_filename }}").toString(), false, { openAPI3RouterFactoryAsyncResult ->
             if (openAPI3RouterFactoryAsyncResult.succeeded()) {
                 var routerFactory: OpenAPI3RouterFactory = openAPI3RouterFactoryAsyncResult.result();
 

@@ -4,9 +4,9 @@ import io.vertx.core.Handler;
 import io.vertx.ext.web.RequestParameters;
 import io.vertx.ext.web.RoutingContext;
 
-class {{ class_name }} implements Handler<RoutingContext> {
+class {{ operation.class_name }} implements Handler<RoutingContext> {
 
-    {{ class_name }}(){
+    {{ operation.class_name }}(){
 
     }
 

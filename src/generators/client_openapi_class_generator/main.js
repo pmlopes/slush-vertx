@@ -3,78 +3,86 @@ let path = require('path');
 let deref = require('json-schema-ref-parser');
 let _ = require('lodash');
 let gutil = require('gulp-util');
-let oasConverter = require('swagger2openapi');
-let oasValidator = require('swagger2openapi/validate.js');
 
 let Utils = require('../../Utils.class');
 let OAS3Utils = require('../../openapi/OAS3Utils.class');
 
-var generateWithoutPrompt = function (project_info, oas_deferenced) {
-    let oas = oas_deferenced;
+function generateMetadata(project_info) {
+    let oas = project_info.oas;
 
-    let renderClient = Utils.loadSingleTemplate(project_info.templates.client, "client_openapi_class_generator", project_info.language);
-
+    // Prepare operations array
     operations = OAS3Utils.getPathsByOperationIds(oas);
+    _.forOwn(operations, (operation, key) => {
 
-    Object.keys(operations).forEach(key => {
+        // Generate functions based on request bodies
         let baseFunctionName = OAS3Utils.sanitizeOperationId(key);
-
-        let functions = [];
-
-        if (!_.has(operations[key], "requestBody.content") || _.isEmpty(operations[key].requestBody.content)) {
-            functions.push({name: baseFunctionName, empty: true});
+        operation.functions = [];
+        if (!_.has(operation, "requestBody.content") || _.isEmpty(operation.requestBody.content)) {
+            operation.functions.push({name: baseFunctionName, empty: true});
         } else {
-            functions.push({name: baseFunctionName + "WithEmptyBody", empty: true});
-            _.forOwn(operations[key].requestBody.content, (value, key) => {
-                if (key == "application/json")
-                    functions.push({name: baseFunctionName + "WithJson", json: true, contentType: key});
-                else if (key == "multipart/form-data")
-                    functions.push({name: baseFunctionName + "WithMultipartForm", form: true, contentType: key});
-                else if (key == "application/x-www-form-urlencoded")
-                    functions.push({name: baseFunctionName + "WithForm", form: true, contentType: key});
+            operation.functions.push({name: baseFunctionName + "WithEmptyBody", empty: true});
+            _.forOwn(operation.requestBody.content, (value, contentType) => {
+                if (contentType == "application/json")
+                    operation.functions.push({name: baseFunctionName + "WithJson", json: true, contentType: contentType});
+                else if (contentType == "multipart/form-data")
+                    operation.functions.push({name: baseFunctionName + "WithMultipartForm", form: true, contentType: contentType});
+                else if (contentType == "application/x-www-form-urlencoded")
+                    operation.functions.push({name: baseFunctionName + "WithForm", form: true, contentType: contentType});
                 else {
-                    functions.push({
-                        name: baseFunctionName + "With" + OAS3Utils.sanitizeContentType(key) + "Buffer",
+                    operation.functions.push({
+                        name: baseFunctionName + "With" + OAS3Utils.sanitizeContentType(contentType) + "Buffer",
                         buffer: true,
-                        contentType: key
+                        contentType: contentType
                     });
-                    functions.push({
-                        name: baseFunctionName + "With" + OAS3Utils.sanitizeContentType(key) + "Stream",
+                    operation.functions.push({
+                        name: baseFunctionName + "With" + OAS3Utils.sanitizeContentType(contentType) + "Stream",
                         stream: true,
-                        contentType: key
+                        contentType: contentType
                     });
                 }
             });
         }
 
-        let securityRequirements = operations[key].security;
-        if (securityRequirements)
-            operations[key].security = _.mapValues(_.keyBy(_.flatten(_.map(securityRequirements, (value) => _.keys(value)))), (value) => OAS3Utils.sanitizeSecuritySchemaName(value));
+        // Map security functions
+        if (operation.security)
+        // Generate an object with security schemas as keys and sanitized secuirity schema names as values
+            operations[key].security = _.mapValues(
+                _.keyBy(_.flatten(_.map(operation.security, (value) => _.keys(value)))),
+                (value) => OAS3Utils.sanitizeSecuritySchemaName(value)
+            );
 
-        operations[key].functions = functions;
-        operations[key].parameters = OAS3Utils.extractParametersWithTypes(operations[key], project_info.language);
+        // Add parameters to operation
+        operation.parameters = OAS3Utils.extractParametersWithTypes(operations[key], project_info.language);
     });
 
+    // Prepare security schemas array
     let securitySchemas = _.get(oas, 'components.securitySchemes');
     _.forOwn(securitySchemas, (value, key) => {
-            securitySchemas[key].sanitized_schema_name = OAS3Utils.sanitizeSecuritySchemaName(key);
+        value.sanitized_schema_name = OAS3Utils.sanitizeSecuritySchemaName(key);
     });
 
+    // Render client class
     let info = {
         project_info: project_info,
-        operations: operations,
-        oas: oas
+        operations: operations
     };
-
     if (securitySchemas)
         info.security_schemas = securitySchemas;
-
-    Utils.writeFilesSync([project_info.templates.client], [renderClient(info)], project_info.src_dir);
 
     return info;
 }
 
+function render (project_info) {
+    let renderClient = Utils.loadSingleTemplate(project_info.templates.client, "client_openapi_class_generator", project_info.language);
+
+    return {
+        path: project_info.templates.client,
+        content: renderClient(generateMetadata(project_info))
+    };
+}
+
 module.exports = {
     hidden: true,
-    generateWithoutPrompt: generateWithoutPrompt
+    render: render,
+    metadata: generateMetadata
 };

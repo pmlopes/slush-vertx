@@ -279,7 +279,9 @@ public class ApiClient {
      * @return
      */
     private String renderPathObjectMatrixExplode(String paramName, Map<String, Object> values) {
-        return String.join("", values.keySet().stream().map(object -> ";" + paramName + "=" + encode(String.valueOf(object))).collect(Collectors.toList()));
+      return String.join("", values.entrySet().stream().map(
+        entry -> ";" + entry.getKey() + "=" + encode(String.valueOf(entry.getValue()))
+      ).collect(Collectors.toList()));
     }
 
     /**

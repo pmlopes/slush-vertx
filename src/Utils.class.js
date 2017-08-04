@@ -13,6 +13,7 @@ Handlebars.registerHelper('escape', function(variable) {
     return variable.replace(/(['"])/g, '\\$1');
 });
 
+var gutil = require('gulp-util');
 var inquirer = require('inquirer');
 
 module.exports = class Utils {
@@ -35,6 +36,10 @@ module.exports = class Utils {
             delete language.var_templates;
         if (build_tool.var_templates)
             delete build_tool.var_templates;
+        if (language.questions)
+            delete language.questions;
+        if (build_tool.questions)
+            delete build_tool.questions;
 
         project_info = Utils.mergeObjs(project_info, language, true);
         project_info.build_tool = build_tool;
@@ -70,7 +75,7 @@ module.exports = class Utils {
     }
 
     static checkIfDirIsEmpty(dir) {
-        return !['pom.xml', 'build.gradle', 'package.json'].some(function (el) {
+        return !['pom.xml', 'build.gradle', 'package.json', 'src', 'target'].some(function (el) {
             return fs.existsSync(dir + path.sep + el);
         });
     }
@@ -92,7 +97,7 @@ module.exports = class Utils {
         } else {
             result = {};
             Object.keys(templates).map((key) => {
-                let templateSource = fs.readFileSync(path.join(languageDir, templates[key]), 'utf-8');
+                let templateSource = fs.readFileSync(path.join(templatesDir, templates[key]), 'utf-8');
                 result[key] = Handlebars.compile(templateSource, {noEscape: true});
             });
 
@@ -132,6 +137,15 @@ module.exports = class Utils {
         }
     }
 
+    static writeFilesArraySync(files) {
+        for (let i in files) {
+            let finalPath = path.resolve(path.join(process.cwd(), files[i].path));
+            fs.mkdirpSync(path.dirname(finalPath));
+            gutil.log("Writing file ", gutil.colors.cyan(path.relative(process.cwd(), finalPath)));
+            fs.writeFileSync(finalPath, files[i].content, 'utf-8');
+        }
+    }
+
     static processVariablesTemplates(obj, var_templates) {
         if (var_templates) {
             Object.keys(var_templates).forEach((key) => {
@@ -144,7 +158,7 @@ module.exports = class Utils {
         return obj;
     }
 
-    static processQuestions(questions, var_templates) {
+    static processQuestions(questions, var_templates, project_info) {
         return new Promise((resolve, reject) => {
             if (questions)
                 inquirer.prompt(questions).then(answers => {
@@ -153,23 +167,34 @@ module.exports = class Utils {
         });
     }
 
-    static processLanguage(allowedLanguages) {
+    static processLanguage(allowedLanguages, project_info) {
         return new Promise((resolve, reject) => {
             Utils.pickSelection("Which language: ", allowedLanguages)
                 .then((language) => {
                     Utils.pickSelection("Which build tool: ", language.build_tools).then((build_tool) => {
                         if (language.questions) {
                             inquirer.prompt(language.questions).then(answers => {
-                                resolve({
-                                        language: Utils.processVariablesTemplates(Utils.mergeObjs(language, answers, true), language.var_templates),
-                                        build_tool: Utils.processVariablesTemplates(build_tool, build_tool.var_templates)
-                                });
+                                let result = {
+                                    language: Utils.processVariablesTemplates(Utils.mergeObjs(language, answers, true), language.var_templates),
+                                    build_tool: Utils.processVariablesTemplates(build_tool, build_tool.var_templates)
+                                };
+
+                                if (project_info)
+                                    result.project_info = Utils.buildProjectObject(project_info, language, build_tool);
+
+                                resolve(result);
                             });
-                        } else
-                            resolve({
+                        } else {
+                            let result = {
                                 language: Utils.processVariablesTemplates(language, language.var_templates),
                                 build_tool: Utils.processVariablesTemplates(build_tool, build_tool.var_templates)
-                            });
+                            };
+
+                            if (project_info)
+                                result.project_info = Utils.buildProjectObject(project_info, language, build_tool);
+
+                            resolve(result);
+                        }
                     })
                 });
         });

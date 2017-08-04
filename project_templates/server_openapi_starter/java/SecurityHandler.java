@@ -3,15 +3,15 @@ package {{#if project_info.package}}{{ project_info.package }}.{{/if}}securityHa
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 
-public class {{ class_name }} implements Handler<RoutingContext> {
+public class {{ security_schema.class_name }} implements Handler<RoutingContext> {
 
-    public {{ class_name }}(){
+    public {{ security_schema.class_name }}(){
 
     }
 
     @Override
     public void handle(RoutingContext routingContext) {
-        // Handle your security
+        // Handle {{ security_schema.schema_name }} security schema
         routingContext.next();
     }
 

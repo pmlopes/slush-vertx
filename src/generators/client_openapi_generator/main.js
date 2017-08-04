@@ -9,7 +9,9 @@ let OAS3Utils = require('../../openapi/OAS3Utils.class');
 let constants = require('../../constants');
 let metadata = require('../../common_metadata');
 
-let clientGenerator = require(path.join(__src, "generators", "client_openapi_class_generator", "main.js")).generateWithoutPrompt;
+let docTemplates = ["README.md", "Operations.md"];
+
+let clientMetadata = require(path.join(__src, "generators", "client_openapi_class_generator", "main.js")).metadata;
 
 let languagesMetadata = [
     {
@@ -113,10 +115,35 @@ let languagesMetadata = [
     // },
 ];
 
+function render(project_info) {
+    let info = clientMetadata(project_info);
+
+    let renderClient = Utils.loadSingleTemplate(project_info.templates.client, "client_openapi_class_generator", project_info.language);
+    let docTemplatesFunctions = Utils.loadGeneratorTemplates(docTemplates, "client_openapi_generator");
+    let buildFilesTemplatesFunctions = Utils.loadBuildFilesTemplates(project_info.build_tool.templates, project_info.build_tool.name);
+
+    // Some lodash magic
+    return _.concat(
+        _.zipWith(
+            docTemplates, // Prepend to paths the src_dir path
+            docTemplatesFunctions.map(template => template(info)), // Render templates
+            (path, content) => new Object({path: path, content: content}) // Push into the array in a form {path: path, content: content}
+        ),
+        {
+            path: project_info.templates.client,
+            content: renderClient(info)
+        },
+        {
+            path: path.join(project_info.resources_dir, project_info.spec_filename),
+            content: JSON.stringify(project_info.oasSerializable)
+        }
+    )
+}
+
 module.exports = {
     name: "Client OpenAPI project",
     generate: function (project_info, done) {
-        Utils.processLanguage(languagesMetadata).then(result => {
+        Utils.processLanguage(languagesMetadata, project_info).then(result => {
             return Promise.all([result, Utils.processQuestions({
                 type: 'input',
                 name: 'openapispec',
@@ -125,29 +152,16 @@ module.exports = {
         }).then(results => {
             return Promise.all([...results, OAS3Utils.resolveOpenAPISpec(results[1].openapispec, true)]);
         }).then(results => {
-            let language = results[0].language;
-            let build_tool = results[0].build_tool;
-            let spec_path = results[1].openapispec;
-            let spec_filename = path.basename(spec_path, path.extname(spec_path)) + ".json";
-            let oas = results[2][1];
-            let oasSerializable = results[2][0];
-            let docTemplates = ["README.md", "Operations.md"];
+            let project_info = results[0].project_info;
+            project_info.oas = results[2][1];
+            project_info.oasSerializable = results[2][0];
+            project_info.spec_path = results[1].openapispec;
+            project_info.spec_filename = path.basename(project_info.spec_path, path.extname(project_info.spec_path)) + ".json";
 
-            project_info = Utils.buildProjectObject(project_info, language, build_tool);
-            let info = clientGenerator(project_info, oas);
-
-            let docTemplatesFunctions = Utils.loadGeneratorTemplates(docTemplates, "client_openapi_generator");
-            let docFiles = _.mapValues(docTemplatesFunctions, (template) => template(info));
-
-            let buildFilesTemplatesFunctions = Utils.loadBuildFilesTemplates(build_tool.templates, build_tool.name);
-            let buildFiles = buildFilesTemplatesFunctions.map((template) => template(project_info));
-
-            Utils.writeFilesSync(docTemplates, docFiles);
-            Utils.writeFilesSync(build_tool.templates, buildFiles);
-
-            Utils.writeFilesSync([path.join(language.resources_dir, spec_filename)], [JSON.stringify(oasSerializable)]);
+            Utils.writeFilesArraySync(render(project_info));
 
             done();
         }).catch(error => done(new gutil.PluginError('new', error.stack)));
-    }
+    },
+    render: render
 };

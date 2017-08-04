@@ -1,6 +1,7 @@
-var fs = require('fs');
-var path = require('path');
-var Handlebars = require('handlebars');
+let fs = require('fs');
+let path = require('path');
+let Handlebars = require('handlebars');
+let _ = require('lodash');
 
 let Utils = require('../../Utils.class');
 let constants = require('../../constants');
@@ -100,25 +101,40 @@ let languagesMetadata = [
     }
 ];
 
+//This function load and render templates
+function render(project_info) {
+    // Load templates
+    let templatesFunctions = Utils.loadGeneratorTemplates(project_info.templates, "server_starter", project_info.language);
+    let buildFilesTemplatesFunctions = Utils.loadBuildFilesTemplates(project_info.build_tool.templates, project_info.build_tool.name);
+
+    // Some lodash magic
+    return _.concat(
+        _.zipWith(
+            project_info.templates.map(p => path.join(project_info.src_dir, p)), // Prepend to paths the src_dir path
+            templatesFunctions.map(template => template(project_info)), // Render templates
+            (path, content) => new Object({path: path, content: content}) // Push into the array in a form {path: path, content: content}
+            ),
+        _.zipWith(
+            project_info.build_tool.templates,
+            buildFilesTemplatesFunctions.map(template => template(project_info)),
+            (path, content) => new Object({path: path, content: content})
+        )
+    )
+}
+
 module.exports = {
     name: "Starter project",
     generate: function (project_info, done) {
-        Utils.processLanguage(languagesMetadata).then((result) => {
-            let language = result.language;
-            let build_tool = result.build_tool;
+        // Process questions about the language
+        Utils.processLanguage(languagesMetadata, project_info).then((result) => {
+            //Transform project info and render templates
+            let files = render(result.project_info);
 
-            let templatesFunctions = Utils.loadGeneratorTemplates(language.templates, "server_starter", language.name);
-            let buildFilesTemplatesFunctions = Utils.loadBuildFilesTemplates(build_tool.templates, build_tool.name);
-
-            project_info = Utils.buildProjectObject(project_info, language, build_tool);
-
-            let srcFiles = templatesFunctions.map((template) => template(project_info));
-            let buildFiles = buildFilesTemplatesFunctions.map((template) => template(project_info));
-
-            Utils.writeFilesSync(language.templates, srcFiles, language.src_dir);
-            Utils.writeFilesSync(build_tool.templates, buildFiles);
+            //Write files
+            Utils.writeFilesArraySync(files);
 
             done();
         });
-    }
+    },
+    render: render
 };
