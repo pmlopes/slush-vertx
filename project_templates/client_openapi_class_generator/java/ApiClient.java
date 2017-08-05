@@ -761,7 +761,7 @@ public class ApiClient {
 
 
     private void renderAndAttachCookieHeader(HttpRequest request, MultiMap otherCookies) {
-        if (otherCookies.isEmpty() && cookieParams.isEmpty())
+        if ((otherCookies == null || otherCookies.isEmpty()) && cookieParams.isEmpty())
             return;
         List<String> listToSerialize = new ArrayList<>();
         for (Map.Entry<String, String> e : cookieParams.entries()) {
