@@ -40,39 +40,32 @@ let languagesMetadata = [
             src_dir: metadata.var_templates.src_dir
         }
     },
-    // {
-    //     name: "kotlin",
-    //     build_tools: [
-    //         metadata.build_tools.maven
-    //     ],
-    //     templates:
-    //         {
-    //             main: "MainVerticle.kt",
-    //             handler: "Handler.kt",
-    //             security_handler: "SecurityHandler.kt"
-    //         },
-    //     resources_dir: "src/resources",
-    //     dependencies: _.concat(metadata.dependencies.java_dependencies, [
-    //         {
-    //             group: "io.vertx",
-    //             artifact: "vertx-web",
-    //             version: constants.VERTX_VERSION
-    //         },
-    //         {
-    //             group: "io.vertx",
-    //             artifact: "vertx-web-api-contract",
-    //             version: constants.VERTX_VERSION
-    //         }
-    //     ]),
-    //     questions: [
-    //         metadata.questions.package
-    //     ],
-    //     var_templates: {
-    //         package: metadata.var_templates.package,
-    //         main: metadata.var_templates.main_class,
-    //         src_dir: metadata.var_templates.src_dir
-    //     }
-    // },
+    {
+        name: "kotlin",
+        build_tools: [
+            metadata.build_tools.maven
+        ],
+        templates:
+        {
+            client: "ApiClient.kt"
+        },
+        resources_dir: metadata.resources_dir,
+        dependencies: _.concat(metadata.dependencies.kotlin_dependencies, [
+            {
+                group: "io.vertx",
+                artifact: "vertx-web-client",
+                version: constants.VERTX_VERSION
+            }
+        ]),
+        questions: [
+            metadata.questions.package
+        ],
+        var_templates: {
+            package: metadata.var_templates.package,
+            main: metadata.var_templates.main_class,
+            src_dir: metadata.var_templates.src_dir
+        }
+    },
     // {
     //     name: "groovy",
     //     build_tools: [
@@ -122,6 +115,11 @@ function render(project_info) {
             docTemplates,
             docTemplatesFunctions.map(template => template(info)), // Render templates
             (path, content) => new Object({path: path, content: content}) // Push into the array in a form {path: path, content: content}
+        ),
+        _.zipWith(
+            project_info.build_tool.templates,
+            buildFilesTemplatesFunctions.map(template => template(project_info)),
+            (path, content) => new Object({path: path, content: content})
         ),
         {
             path: path.join(project_info.src_dir,project_info.templates.client),

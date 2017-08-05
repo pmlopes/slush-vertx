@@ -20,10 +20,27 @@ module.exports = {
             },
             boolean: "Boolean",
             default: "Object"
+        },
+        kotlin: {
+            object: "MutableMap<String, Any>?",
+            array: "MutableList<String>?",
+            string: "String?",
+            integer: {
+                int32: "Int?",
+                int64: "Long?",
+                default: "Int?"
+            },
+            number: {
+                float: "Float?",
+                double: "Double?",
+                default: "Float?"
+            },
+            boolean: "Boolean?",
+            default: "Any?"
         }
     },
     client_parameters_functions_map: {
-        java: {
+        default: {
             path: {
                 array: {
                     matrix: {
