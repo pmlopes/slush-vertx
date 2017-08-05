@@ -91,14 +91,18 @@ module.exports = class Utils {
             result = [];
             templates = templates.map((template) => path.join(templatesDir, template));
             templates.forEach((templatePath) => {
-                let templateSource = fs.readFileSync(templatePath, 'utf-8');
-                result.push(Handlebars.compile(templateSource, {noEscape: true}));
+                try {
+                    let templateSource = fs.readFileSync(templatePath, 'utf-8');
+                    result.push(Handlebars.compile(templateSource, {noEscape: true}));
+                } catch (e) {}
             });
         } else {
             result = {};
             Object.keys(templates).map((key) => {
-                let templateSource = fs.readFileSync(path.join(templatesDir, templates[key]), 'utf-8');
-                result[key] = Handlebars.compile(templateSource, {noEscape: true});
+                try {
+                    let templateSource = fs.readFileSync(path.join(templatesDir, templates[key]), 'utf-8');
+                    result[key] = Handlebars.compile(templateSource, {noEscape: true});
+                } catch (e) {}
             });
 
         }

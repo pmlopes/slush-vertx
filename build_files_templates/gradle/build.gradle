@@ -12,12 +12,9 @@ buildscript {
   }
 }
 
-{{#compare language '==' "kotlin"}}
-apply plugin: 'kotlin'
-{{/compare}}{{#compare language '==' "groovy"}}
-apply plugin: 'groovy'
-{{/compare}}
-apply plugin: 'java'
+{{#compare language '==' "kotlin"}}apply plugin: 'kotlin'
+{{/compare}}{{#compare language '==' "groovy"}}apply plugin: 'groovy'
+{{/compare}}apply plugin: 'java'
 apply plugin: 'application'
 apply plugin: 'com.github.johnrengelman.shadow'
 
@@ -26,14 +23,14 @@ repositories {
 }
 
 version = '0.0.1'
-group = '{{project_name}}'
+group = '{{dashcase project_name}}'
 sourceCompatibility = '1.8'
 mainClassName = 'io.vertx.core.Launcher'
 
 dependencies {
-{{#each dependencies}}
-  compile '{{group}}:{{artifact}}:{{version}}'
-{{/each}}
+{{#each dependencies}}{{#if test}}  testCompile '{{group}}:{{artifact}}:{{version}}'
+{{else}}  compile '{{group}}:{{artifact}}:{{version}}'
+{{/if}}{{/each}}
 }
 
 shadowJar {

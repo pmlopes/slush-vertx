@@ -89,7 +89,7 @@ public class ApiClient {
         {{#each ../parameters.cookie}}if ({{name}} != null) this.{{renderFunctionName}}("{{oasParameter.name}}", {{name}}, requestCookies);
         {{/each}}{{#each ../parameters.header}}if ({{name}} != null) this.{{renderFunctionName}}("{{oasParameter.name}}", {{name}}, request);
         {{/each}}{{#each ../parameters.query}}if ({{name}} != null) this.{{renderFunctionName}}("{{oasParameter.name}}", {{name}}, request);
-        {{/each}}{{#if contentType}}this.addHeaderParam("Content-Type", {{contentType}}, request);
+        {{/each}}{{#if contentType}}this.addHeaderParam("Content-Type", "{{contentType}}", request);
         {{/if}}{{#if ../security}}{{#forOwn ../security}}this.attach{{capitalize .}}Security(request, requestCookies);
         {{/forOwn}}{{/if}}
 

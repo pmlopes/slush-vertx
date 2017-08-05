@@ -5,11 +5,11 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>{{project_name}}</groupId>
-  <artifactId>{{project_name}}</artifactId>
+  <groupId>{{dashcase project_name}}</groupId>
+  <artifactId>{{dashcase project_name}}</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
-  <name>{{project_name}}</name>
+  <name>{{dashcase project_name}}</name>
 
   <properties>
     <main.verticle>{{main}}</main.verticle>{{#compare language '==' "kotlin"}}
@@ -21,7 +21,8 @@
     <dependency>
       <groupId>{{group}}</groupId>
       <artifactId>{{artifact}}</artifactId>
-      <version>{{version}}</version>
+      <version>{{version}}</version>{{#if test}}
+      <scope>test</scope>{{/if}}
     </dependency>
     {{/each}}
   </dependencies>

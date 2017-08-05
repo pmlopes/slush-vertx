@@ -2,7 +2,6 @@ let fs = require('fs-extra');
 let path = require('path');
 let _ = require('lodash');
 let gutil = require('gulp-util');
-let deref = require('json-schema-ref-parser');
 
 let Utils = require('../../Utils.class');
 let OAS3Utils = require('../../openapi/OAS3Utils.class');
@@ -24,16 +23,11 @@ let languagesMetadata = [
         {
             client: "ApiClient.java"
         },
-        resources_dir: "src/resources",
+        resources_dir: metadata.resources_dir,
         dependencies: _.concat(metadata.dependencies.java_dependencies, [
             {
                 group: "io.vertx",
-                artifact: "vertx-web",
-                version: constants.VERTX_VERSION
-            },
-            {
-                group: "io.vertx",
-                artifact: "vertx-web-api-contract",
+                artifact: "vertx-web-client",
                 version: constants.VERTX_VERSION
             }
         ]),
@@ -125,12 +119,12 @@ function render(project_info) {
     // Some lodash magic
     return _.concat(
         _.zipWith(
-            docTemplates, // Prepend to paths the src_dir path
+            docTemplates,
             docTemplatesFunctions.map(template => template(info)), // Render templates
             (path, content) => new Object({path: path, content: content}) // Push into the array in a form {path: path, content: content}
         ),
         {
-            path: project_info.templates.client,
+            path: path.join(project_info.src_dir,project_info.templates.client),
             content: renderClient(info)
         },
         {
