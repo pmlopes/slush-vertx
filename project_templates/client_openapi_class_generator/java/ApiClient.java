@@ -4,7 +4,9 @@
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
-import io.vertx.core.http.CaseInsensitiveHeaders;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.streams.ReadStream;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
@@ -39,13 +41,13 @@ public class ApiClient {
         this.port = port;
         this.host = host;
 
-        cookieParams = new CaseInsensitiveHeaders();
+        cookieParams = MultiMap.caseInsensitiveMultiMap();
     }
 
     ApiClient(WebClient client) {
         this.client = client;
 
-        cookieParams = new CaseInsensitiveHeaders();
+        cookieParams = MultiMap.caseInsensitiveMultiMap();
     }
 
     {{#forOwn operations}}
@@ -85,7 +87,7 @@ public class ApiClient {
 
         HttpRequest request = client.get(uri);
 
-        MultiMap requestCookies = new CaseInsensitiveHeaders();
+        MultiMap requestCookies = MultiMap.caseInsensitiveMultiMap();
         {{#each ../parameters.cookie}}if ({{name}} != null) this.{{renderFunctionName}}("{{oasParameter.name}}", {{name}}, requestCookies);
         {{/each}}{{#each ../parameters.header}}if ({{name}} != null) this.{{renderFunctionName}}("{{oasParameter.name}}", {{name}}, request);
         {{/each}}{{#each ../parameters.query}}if ({{name}} != null) this.{{renderFunctionName}}("{{oasParameter.name}}", {{name}}, request);

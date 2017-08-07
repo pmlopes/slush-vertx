@@ -5,7 +5,8 @@ import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer
-import io.vertx.core.http.CaseInsensitiveHeaders;
+import io.vertx.core.streams.ReadStream
+import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.HttpResponse;
 import io.vertx.ext.web.client.WebClient;
@@ -24,21 +25,21 @@ import java.util.Base64;
 public class ApiClient {
     private var client: WebClient
 
-{{#forOwn security_schemas}}{{#and (compare (get "type" .) '==' 'http') (compare (get "type" .) '==' 'basic')}}    private lateinit var {{sanitized_schema_name}}_username: String
-    private lateinit var {{sanitized_schema_name}}_password: String
-{{/and}}{{#or (and (compare type '==' 'http') (compare type '==' 'bearer')) (compare type '==' 'apiKey') (compare type '==' 'oauth2') (compare type '==' 'openIdConnect')}}    private lateinit var {{sanitized_schema_name}}_token: String
+{{#forOwn security_schemas}}{{#and (compare (get "type" .) '==' 'http') (compare (get "type" .) '==' 'basic')}}    private var {{sanitized_schema_name}}_username: String? = null
+    private var {{sanitized_schema_name}}_password: String? = null
+{{/and}}{{#or (and (compare type '==' 'http') (compare type '==' 'bearer')) (compare type '==' 'apiKey') (compare type '==' 'oauth2') (compare type '==' 'openIdConnect')}}    private var {{sanitized_schema_name}}_token: String? = null
 {{/or}}{{/forOwn}}
 
-    private lateinit var cookieParams: MultiMap
+    private var cookieParams: MultiMap
 
     internal constructor(vertx: Vertx, host: String, port: Int) {
         client = WebClient.create(vertx, WebClientOptions().setDefaultHost(host).setDefaultPort(port))
-        cookieParams = CaseInsensitiveHeaders()
+        cookieParams = MultiMap.caseInsensitiveMultiMap()
     }
 
     internal constructor(client: WebClient) {
         this.client = client
-        cookieParams = CaseInsensitiveHeaders()
+        cookieParams = MultiMap.caseInsensitiveMultiMap()
     }
 
     {{#forOwn operations}}
@@ -78,7 +79,7 @@ public class ApiClient {
 
         var request = client.get(uri)
 
-        var requestCookies: MultiMap = CaseInsensitiveHeaders();
+        var requestCookies = MultiMap.caseInsensitiveMultiMap()
         {{#each ../parameters.cookie}}if ({{name}} != null) this.{{renderFunctionName}}("{{oasParameter.name}}", {{name}}, requestCookies);
         {{/each}}{{#each ../parameters.header}}if ({{name}} != null) this.{{renderFunctionName}}("{{oasParameter.name}}", {{name}}, request);
         {{/each}}{{#each ../parameters.query}}if ({{name}} != null) this.{{renderFunctionName}}("{{oasParameter.name}}", {{name}}, request);

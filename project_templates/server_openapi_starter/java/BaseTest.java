@@ -1,41 +1,33 @@
-{{#if project_info.package}}package {{ project_info.package }};
-
-{{/if}}import io.vertx.core.Vertx;
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
+import io.vertx.ext.unit.junit.RunTestOnContext;
 
-@RunWith(VertxUnitRunner.class)
 public class BaseTest {
 
     Vertx vertx;
     String deploymentId;
     ApiClient apiClient;
 
-    @BeforeClass
     public void before(TestContext context) {
-        vertx = Vertx.vertx();
-        MainVerticle myVerticle = new MainVerticle();
+        vertx = Vertx.vertx(new VertxOptions().setMaxEventLoopExecuteTime(Long.MAX_VALUE));
         Async async = context.async();
-        vertx.deployVerticle(myVerticle, res -> {
+        vertx.deployVerticle(MainVerticle.class.getName(), res -> {
             if (res.succeeded()) {
                 deploymentId = res.result();
                 apiClient = new ApiClient(vertx, "localhost", 8080);
                 async.complete();
             } else {
-                System.out.println("Verticle deployment failed!");
+                context.fail("Verticle deployment failed!");
+                async.complete();
             }
         });
-        async.awaitSuccess();
     }
 
-    @AfterClass
     public void after(TestContext context) {
         apiClient.close();
-        vertx.undeploy(deploymentId);
         vertx.close(context.asyncAssertSuccess());
     }
 }

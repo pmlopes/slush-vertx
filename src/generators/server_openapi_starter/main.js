@@ -69,28 +69,43 @@ let languagesMetadata = [
             {
                 main: "MainVerticle.kt",
                 handler: "Handler.kt",
-                security_handler: "SecurityHandler.kt"
+                security_handler: "SecurityHandler.kt",
+                operation_test: "OperationTest.kt",
+                client: "ApiClient.kt",
+                base_test: "BaseTest.kt"
             },
         resources_dir: metadata.resources_dir,
-        dependencies: _.concat(metadata.dependencies.java_dependencies, [
-            {
-                group: "io.vertx",
-                artifact: "vertx-web",
-                version: constants.VERTX_VERSION
-            },
-            {
-                group: "io.vertx",
-                artifact: "vertx-web-api-contract",
-                version: constants.VERTX_VERSION
-            }
-        ]),
+        dependencies: _.concat(
+            metadata.dependencies.kotlin_dependencies,
+            metadata.dependencies.kotlin_test_dependencies,
+            metadata.dependencies.vertx_test_dependencies,
+            [
+                {
+                    group: "io.vertx",
+                    artifact: "vertx-web",
+                    version: constants.VERTX_VERSION
+                },
+                {
+                    group: "io.vertx",
+                    artifact: "vertx-web-api-contract",
+                    version: constants.VERTX_VERSION
+                },
+                {
+                    group: "io.vertx",
+                    artifact: "vertx-web-client",
+                    version: constants.VERTX_VERSION,
+                    test: true
+                }
+            ]
+        ),
         questions: [
             metadata.questions.package
         ],
         var_templates: {
             package: metadata.var_templates.package,
             main: metadata.var_templates.main_class,
-            src_dir: metadata.var_templates.src_dir
+            src_dir: metadata.var_templates.src_dir,
+            test_dir: metadata.var_templates.test_dir
         }
     },
     {

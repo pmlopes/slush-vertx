@@ -17,12 +17,14 @@ import org.junit.runner.RunWith;
 public class {{ operation.test_class_name }} extends BaseTest {
 
     @Override
+    @Before
     public void before(TestContext context) {
         super.before(context);
         //TODO add some test initialization code like security token retrieval
     }
 
     @Override
+    @After
     public void after(TestContext context) {
         //TODO add some test end code like session destroy
         super.after(context);
@@ -30,7 +32,7 @@ public class {{ operation.test_class_name }} extends BaseTest {
 
 {{#forOwn operation.responses}}    @Test
     public void test{{capitalize @key}}(TestContext test) {
-        Async async = test.async({{length ../functions}});
+        Async async = test.async({{length .././operation/functions}});
 {{#each .././operation/parameters.path}}        {{languageType}} {{name}} = null;
 {{/each}}{{#each .././operation/parameters.cookie}}        {{languageType}} {{name}} = null;
 {{/each}}{{#each .././operation/parameters.query}}        {{languageType}} {{name}} = null;
@@ -44,7 +46,7 @@ public class {{ operation.test_class_name }} extends BaseTest {
 {{/each}}{{#each ../.././operation/parameters.query}}        {{name}} = null;
 {{/each}}{{#each ../.././operation/parameters.header}}        {{name}} = null;
 {{/each}}{{#if json}}        JsonObject body = new JsonObject();
-{{else if form}}        MultiMap form = new MultiMap();
+{{else if form}}        MultiMap form = MultiMap.caseInsensitiveMultiMap();
 {{else if stream}}        ReadStream<Buffer> stream = null;
 {{else if buffer}}        Buffer buffer = null;
 {{/if}}        apiClient.{{name}}({{#each ../.././operation/parameters.path}}{{name}}, {{/each}}{{#each ../.././operation/parameters.cookie}}{{name}}, {{/each}}{{#each ../.././operation/parameters.query}}{{name}}, {{/each}}{{#each ../.././operation/parameters.header}}{{name}}, {{/each}}{{#if json}}body, {{else if form}}form, {{else if stream}}stream, {{else if buffer}}buffer, {{/if}}(AsyncResult<HttpResponse> ar) -> {
@@ -57,8 +59,6 @@ public class {{ operation.test_class_name }} extends BaseTest {
             async.countDown();
         });
 {{/each}}
-
-        async.awaitSuccess();
     }
 
 {{/forOwn}}
