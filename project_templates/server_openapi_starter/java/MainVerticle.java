@@ -11,7 +11,7 @@ public class MainVerticle extends AbstractVerticle {
   HttpServer server;
 
   @Override
-  public void start() {
+  public void start(Future future) {
     OpenAPI3RouterFactory.createRouterFactoryFromURL(this.vertx, getClass().getResource("/{{ project_info.spec_filename }}").toString(), false, openAPI3RouterFactoryAsyncResult -> {
       if (openAPI3RouterFactoryAsyncResult.succeeded()) {
         OpenAPI3RouterFactory routerFactory = openAPI3RouterFactoryAsyncResult.result();
@@ -35,6 +35,7 @@ public class MainVerticle extends AbstractVerticle {
         Router router = routerFactory.getRouter();
         server = vertx.createHttpServer(new HttpServerOptions().setPort(8080).setHost("localhost"));
         server.requestHandler(router::accept).listen();
+        future.complete();
       } else {
           // Something went wrong during router factory initialization
           Throwable exception = openAPI3RouterFactoryAsyncResult.cause();
