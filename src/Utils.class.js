@@ -216,4 +216,74 @@ module.exports = class Utils {
                 });
         });
     }
+
+    static generateRenderingFunction(generator_name) {
+        return function (project_info) {
+            // Load templates
+            let templatesFunctions = Utils.loadGeneratorTemplates(project_info.templates, generator_name, project_info.language);
+            let buildFilesTemplatesFunctions = Utils.loadBuildFilesTemplates(project_info.build_tool.templates, project_info.build_tool.name);
+
+            // Some lodash magic
+            return _.concat(
+                _.zipWith(
+                    project_info.templates.map(p => path.join(project_info.src_dir, p)), // Prepend to paths the src_dir path
+                    templatesFunctions.map(template => template(project_info)), // Render templates
+                    (path, content) => new Object({path: path, content: content}) // Push into the array in a form {path: path, content: content}
+                ),
+                _.zipWith(
+                    project_info.build_tool.templates,
+                    buildFilesTemplatesFunctions.map(template => template(project_info)),
+                    (path, content) => new Object({path: path, content: content})
+                )
+            )
+        }
+    }
+
+    static generateRenderingFunctionWithTests(generator_name) {
+        return function (project_info) {
+            // Load templates
+            let srcTemplates = [];
+            let testTemplates = [];
+
+            _.forOwn(project_info.templates, (value, key) => {
+                if (key.includes("test"))
+                    testTemplates.push(value);
+                else
+                    srcTemplates.push(value);
+            });
+
+            let srcTemplatesFunctions = Utils.loadGeneratorTemplates(srcTemplates, generator_name, project_info.language);
+            let testTemplatesFunctions = Utils.loadGeneratorTemplates(testTemplates, generator_name, project_info.language);
+            let buildFilesTemplatesFunctions = Utils.loadBuildFilesTemplates(project_info.build_tool.templates, project_info.build_tool.name);
+
+            // Some lodash magic
+            return _.concat(
+                _.zipWith(
+                    srcTemplates.map(p => path.join(project_info.src_dir, p)),
+                    srcTemplatesFunctions.map(template => template(project_info)),
+                    (path, content) => new Object({path: path, content: content})
+                ),
+                _.zipWith(
+                    testTemplates.map(p => path.join(project_info.test_dir, p)),
+                    testTemplatesFunctions.map(template => template(project_info)),
+                    (path, content) => new Object({path: path, content: content})
+                ),
+                _.zipWith(
+                    project_info.build_tool.templates,
+                    buildFilesTemplatesFunctions.map(template => template(project_info)),
+                    (path, content) => new Object({path: path, content: content})
+                )
+            )
+        }
+    }
+
+    static generateGenerationFunction(languagesMetadata, renderFunction) {
+        return function(project_info, done) {
+            // Process questions about the language
+            Utils.processLanguage(languagesMetadata, project_info).then((result) => {
+                Utils.writeFilesArraySync(renderFunction(result.project_info));
+                done();
+            });
+        }
+    }
 }

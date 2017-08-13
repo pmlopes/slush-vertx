@@ -92,40 +92,11 @@ let languagesMetadata = [
     }
 ];
 
-//This function load and render templates
-function render(project_info) {
-    // Load templates
-    let templatesFunctions = Utils.loadGeneratorTemplates(project_info.templates, "starter_generator", project_info.language);
-    let buildFilesTemplatesFunctions = Utils.loadBuildFilesTemplates(project_info.build_tool.templates, project_info.build_tool.name);
-
-    // Some lodash magic
-    return _.concat(
-        _.zipWith(
-            project_info.templates.map(p => path.join(project_info.src_dir, p)), // Prepend to paths the src_dir path
-            templatesFunctions.map(template => template(project_info)), // Render templates
-            (path, content) => new Object({path: path, content: content}) // Push into the array in a form {path: path, content: content}
-            ),
-        _.zipWith(
-            project_info.build_tool.templates,
-            buildFilesTemplatesFunctions.map(template => template(project_info)),
-            (path, content) => new Object({path: path, content: content})
-        )
-    )
-}
+let renderFunction = Utils.generateRenderingFunction("starter_generator");
+let generationFunction = Utils.generateGenerationFunction(languagesMetadata, renderFunction);
 
 module.exports = {
     name: "Starter project",
-    generate: function (project_info, done) {
-        // Process questions about the language
-        Utils.processLanguage(languagesMetadata, project_info).then((result) => {
-            //Transform project info and render templates
-            let files = render(result.project_info);
-
-            //Write files
-            Utils.writeFilesArraySync(files);
-
-            done();
-        });
-    },
-    render: render
+    generate: generationFunction,
+    render: renderFunction
 };

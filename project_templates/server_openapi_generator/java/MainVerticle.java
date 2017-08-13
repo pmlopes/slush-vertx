@@ -5,6 +5,7 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.web.designdriven.openapi3.OpenAPI3RouterFactory;
 import io.vertx.ext.web.Router;
+import io.vertx.core.Future;
 
 public class MainVerticle extends AbstractVerticle {
 

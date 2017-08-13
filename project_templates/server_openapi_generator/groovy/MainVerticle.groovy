@@ -3,13 +3,14 @@ import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.ext.web.designdriven.openapi3.OpenAPI3RouterFactory;
+import io.vertx.core.Future;
 
 class MainVerticle extends AbstractVerticle {
 
     HttpServer server;
 
     @Override
-    void start() {
+    void start(Future future) {
         OpenAPI3RouterFactory.createRouterFactoryFromURL(this.vertx, getClass().getResource("/{{ project_info.spec_filename }}").toString(), false, {
             if (it.succeeded()) {
                 def routerFactory = it.result();
@@ -36,16 +37,13 @@ class MainVerticle extends AbstractVerticle {
                         host: "localhost"
                 ]));
                 server.requestHandler(router.&accept).listen();
+                future.complete()
+
             } else {
                 // Something went wrong during router factory initialization
                 def exception = openAPI3RouterFactoryAsyncResult.cause();
             }
         });
-    }
-
-    @Override
-    void stop(){
-        this.server.close();
     }
 
 }
