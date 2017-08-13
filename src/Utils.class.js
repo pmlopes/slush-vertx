@@ -224,35 +224,23 @@ module.exports = class Utils {
         }
     }
 
-    static generateRenderingFunctionWithTests(generator_name) {
+    static generateComplexRenderingFunction(generator_name) {
         return function (project_info) {
-            // Load templates
-            let srcTemplates = [];
-            let testTemplates = [];
 
+            let result = [];
             _.forOwn(project_info.templates, (value, key) => {
-                if (key.includes("test"))
-                    testTemplates.push(value);
-                else
-                    srcTemplates.push(value);
+                let templatesFunctions = Utils.loadGeneratorTemplates(value, generator_name, project_info.language);
+                result = _.concat(result, _.zipWith(
+                    value.map(p => path.join(project_info[key + "_dir"], p)),
+                    templatesFunctions.map(template => template(project_info)),
+                    (path, content) => new Object({path: path, content: content})
+                ));
             });
 
-            let srcTemplatesFunctions = Utils.loadGeneratorTemplates(srcTemplates, generator_name, project_info.language);
-            let testTemplatesFunctions = Utils.loadGeneratorTemplates(testTemplates, generator_name, project_info.language);
             let buildFilesTemplatesFunctions = Utils.loadBuildFilesTemplates(project_info.build_tool.templates, project_info.build_tool.name);
 
-            // Some lodash magic
             return _.concat(
-                _.zipWith(
-                    srcTemplates.map(p => path.join(project_info.src_dir, p)),
-                    srcTemplatesFunctions.map(template => template(project_info)),
-                    (path, content) => new Object({path: path, content: content})
-                ),
-                _.zipWith(
-                    testTemplates.map(p => path.join(project_info.test_dir, p)),
-                    testTemplatesFunctions.map(template => template(project_info)),
-                    (path, content) => new Object({path: path, content: content})
-                ),
+                result,
                 _.zipWith(
                     project_info.build_tool.templates,
                     buildFilesTemplatesFunctions.map(template => template(project_info)),

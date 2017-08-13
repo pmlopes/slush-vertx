@@ -13,12 +13,8 @@ let languagesMetadata = [
             metadata.build_tools.maven
         ],
         templates: {
-            main: "MainVerticle.java",
-            users: path.join("users", "UsersRouter.java"),
-            products: path.join("products", "ProductsRouter.java"),
-            base_test: "BaseTest.java",
-            products_test: "ProductsTest.java",
-            users_test: "UsersTest.java"
+            src: ["MainVerticle.java", path.join("users", "UsersRouter.java"), path.join("products", "ProductsRouter.java")],
+            test: ["BaseTest.java", "ProductsTest.java", "UsersTest.java"]
         },
         dependencies: _.concat(
             metadata.dependencies.java_dependencies,
@@ -49,17 +45,47 @@ let languagesMetadata = [
         }
     },
     {
+        name: "javascript",
+        build_tools: [
+            metadata.build_tools.npm_with_jar
+        ],
+        templates: {
+            src: ["main.js", path.join("users", "usersRouter.js"), path.join("products", "productsRouter.js")],
+            test: ["productsTest.js", "usersTest.js"],
+            config: ["config.json"]
+        },
+        dependencies: _.concat(
+            metadata.dependencies.java_dependencies,
+            metadata.dependencies.javascript_dependencies,
+            metadata.dependencies.vertx_test_dependencies,
+            [
+                {
+                    group: "io.vertx",
+                    artifact: "vertx-web",
+                    version: constants.VERTX_VERSION
+                },
+                {
+                    group: "io.vertx",
+                    artifact: "vertx-web-client",
+                    version: constants.VERTX_VERSION,
+                    test: true
+                }
+            ]
+        ),
+        main: "main.js",
+        src_dir: "src",
+        test_dir: "test",
+        config_dir: "",
+        has_tests: true
+    },
+    {
         name: "kotlin",
         build_tools: [
             metadata.build_tools.maven
         ],
         templates: {
-            main: "MainVerticle.kt",
-            users: path.join("users", "UsersRouter.kt"),
-            products: path.join("products", "ProductsRouter.kt"),
-            base_test: "BaseTest.kt",
-            products_test: "ProductsTest.kt",
-            users_test: "UsersTest.kt"
+            src: ["MainVerticle.kt", path.join("users", "UsersRouter.kt"), path.join("products", "ProductsRouter.kt")],
+            test: ["BaseTest.kt", "ProductsTest.kt", "UsersTest.kt"]
         },
         dependencies: _.concat(
             metadata.dependencies.kotlin_dependencies,
@@ -91,7 +117,7 @@ let languagesMetadata = [
     }
 ];
 
-let renderFunction = Utils.generateRenderingFunctionWithTests("vertx_web_starter_generator");
+let renderFunction = Utils.generateComplexRenderingFunction("vertx_web_starter_generator");
 let generationFunction = Utils.generateGenerationFunction(languagesMetadata, renderFunction);
 
 module.exports = {
