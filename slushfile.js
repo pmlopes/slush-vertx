@@ -17,7 +17,7 @@ let _ = require('lodash');
 
 let Utils = require('./src/Utils.class');
 
-// Load generators
+// Load generators during slushfile.js bootstrap
 var generators = [];
 fs.readdirSync(path.join(__src, "generators")).forEach((el) => {
   try {
@@ -29,17 +29,7 @@ fs.readdirSync(path.join(__src, "generators")).forEach((el) => {
   }
 });
 
-gulp.task('git', function (done) {
-  exec('git init', function (error) {
-    if (error) {
-      throw error;
-    }
-    done();
-  });
-});
-
-gulp.task('new', function (done) {
-
+function start(done) {
     var project_info = {};
 
     var base = process.cwd();
@@ -60,10 +50,28 @@ gulp.task('new', function (done) {
         project_info.project_name = answers.name.replace(" ", "-");
         answers.generator(project_info, done);
     });
+}
+
+// Declare gulp tasks
+
+gulp.task('git', function (done) {
+  exec('git init', function (error) {
+    if (error) {
+      throw error;
+    }
+    done();
+  });
 });
 
 if (_.hasIn(argv, "nogit"))
-    gulp.task('default', ['new']);
+    gulp.task('new', function (done) {
+        start(done);
+    });
 else
-    gulp.task('default', ['git', 'new']);
+    gulp.task('new', ["git"], function (done) {
+        start(done);
+    });
+
+gulp.task('default', ['new']);
+
 

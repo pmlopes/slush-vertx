@@ -17,7 +17,26 @@ module.exports = {
         },
         npm: {
             name: "npm",
-            templates: ["package.json", "webpack.config.js"]
+            templates: ["package.json"],
+            npm_dependencies: [
+                {
+                    name: "vertx3-full",
+                    version: constants.VERTX_VERSION
+                },
+                {
+                    name: "babel-cli",
+                    version: "6.2.0"
+                },
+                {
+                    name: "babel-preset-es2015",
+                    version: "6.1.18"
+                }
+            ]
+        },
+        npm_with_jar: {
+            name: "npm_with_jar",
+            display_name: "npm with jar packaging",
+            templates: ["package.json", "webpack.config.js", ".babelrc", "pom.xml"]
         }
     },
     questions: {
@@ -95,6 +114,18 @@ module.exports = {
             {
                 group: "io.vertx",
                 artifact: "vertx-lang-ruby",
+                version: constants.VERTX_VERSION
+            }
+        ],
+        javascript_dependencies: [
+            {
+                group: "io.vertx",
+                artifact: "vertx-core",
+                version: constants.VERTX_VERSION
+            },
+            {
+                group: "io.vertx",
+                artifact: "vertx-lang-js",
                 version: constants.VERTX_VERSION
             }
         ],

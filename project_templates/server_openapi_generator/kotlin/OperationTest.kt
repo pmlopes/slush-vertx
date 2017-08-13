@@ -9,6 +9,8 @@ import io.vertx.core.buffer.Buffer
 import io.vertx.core.streams.ReadStream
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.client.HttpResponse
+import org.junit.After
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 

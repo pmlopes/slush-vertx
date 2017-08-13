@@ -1,5 +1,3 @@
-package {{#if project_info.package}}{{ project_info.package }}.{{/if}}securityHandlers;
-
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 

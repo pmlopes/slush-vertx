@@ -13,11 +13,12 @@ open class BaseTest {
    open fun before(context: TestContext) {
        vertx = Vertx.vertx(VertxOptions().setMaxEventLoopExecuteTime(java.lang.Long.MAX_VALUE))
        val async = context.async()
-       vertx.deployVerticle("MainVerticle", { res ->
+       vertx.deployVerticle("{{#if project_info.package}}{{ project_info.package }}.{{/if}}MainVerticle", { res ->
            if (res.succeeded()) {
                deploymentId = res.result()
                apiClient = ApiClient(vertx, "localhost", 8080)
            } else {
+               res.cause().printStackTrace()
                context.fail("Verticle deployment failed!")
            }
            async.complete()

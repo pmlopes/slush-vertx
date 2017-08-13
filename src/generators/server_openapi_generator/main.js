@@ -118,28 +118,43 @@ let languagesMetadata = [
             {
                 main: "MainVerticle.groovy",
                 handler: "Handler.groovy",
-                security_handler: "SecurityHandler.groovy"
+                security_handler: "SecurityHandler.groovy",
+                client: "ApiClient.groovy",
+                base_test: "BaseTest.groovy",
+                operation_test: "OperationTest.groovy"
             },
         resources_dir: metadata.resources_dir,
-        dependencies: _.concat(metadata.dependencies.groovy_dependencies, [
-            {
-                group: "io.vertx",
-                artifact: "vertx-web",
-                version: constants.VERTX_VERSION
-            },
-            {
-                group: "io.vertx",
-                artifact: "vertx-web-api-contract",
-                version: constants.VERTX_VERSION
-            }
-        ]),
+        dependencies: _.concat(
+            metadata.dependencies.groovy_dependencies,
+            metadata.dependencies.java_test_dependencies,
+            metadata.dependencies.vertx_test_dependencies,
+            [
+                {
+                    group: "io.vertx",
+                    artifact: "vertx-web",
+                    version: constants.VERTX_VERSION
+                },
+                {
+                    group: "io.vertx",
+                    artifact: "vertx-web-api-contract",
+                    version: constants.VERTX_VERSION
+                },
+                {
+                    group: "io.vertx",
+                    artifact: "vertx-web-client",
+                    version: constants.VERTX_VERSION,
+                    test: true
+                }
+            ]
+        ),
         questions: [
             metadata.questions.package
         ],
         var_templates: {
             package: metadata.var_templates.package,
             main: metadata.var_templates.main_class,
-            src_dir: metadata.var_templates.src_dir
+            src_dir: metadata.var_templates.src_dir,
+            test_dir: path.join("src", "test", "groovy")
         }
     },
 ];
@@ -148,7 +163,7 @@ function render(project_info) {
     let result = [];
 
     let renderClient = Utils.loadSingleTemplate(project_info.templates.client, "client_openapi_class_generator", project_info.language);
-    let templatesFunctions = Utils.loadGeneratorTemplates(project_info.templates, "server_openapi_starter", project_info.language);
+    let templatesFunctions = Utils.loadGeneratorTemplates(project_info.templates, "server_openapi_generator", project_info.language);
     let buildFilesTemplatesFunctions = Utils.loadBuildFilesTemplates(project_info.build_tool.templates, project_info.build_tool.name);
 
     // Generate operations handlers

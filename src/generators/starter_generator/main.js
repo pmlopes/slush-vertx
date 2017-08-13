@@ -27,28 +27,19 @@ let languagesMetadata = [
             src_dir: metadata.var_templates.src_dir
         }
     },
-    // { // TODO
-    //     name: "javascript",
-    //     build_tools: [
-    //         build_tools.npm
-    //     ],
-    //     dependencies: [
-    //         {
-    //             group: "io.vertx",
-    //             artifact: "vertx-core",
-    //             version: constants.VERTX_VERSION
-    //         },
-    //         {
-    //             group: "io.vertx",
-    //             artifact: "vertx-lang-js",
-    //             version: constants.VERTX_VERSION
-    //         }
-    //     ],
-    //     templates: [
-    //         path.join("src", "main", "javascript", "main.js")
-    //     ],
-    //     src_dir: "src"
-    // },
+    {
+        name: "javascript",
+        build_tools: [
+            metadata.build_tools.npm,
+            metadata.build_tools.npm_with_jar
+        ],
+        dependencies: metadata.dependencies.javascript_dependencies,
+        templates: [
+            "main.js"
+        ],
+        src_dir: "src",
+        main: "main.js"
+    },
     {
         name: "groovy",
         build_tools: [
@@ -104,7 +95,7 @@ let languagesMetadata = [
 //This function load and render templates
 function render(project_info) {
     // Load templates
-    let templatesFunctions = Utils.loadGeneratorTemplates(project_info.templates, "server_starter", project_info.language);
+    let templatesFunctions = Utils.loadGeneratorTemplates(project_info.templates, "starter_generator", project_info.language);
     let buildFilesTemplatesFunctions = Utils.loadBuildFilesTemplates(project_info.build_tool.templates, project_info.build_tool.name);
 
     // Some lodash magic

@@ -17,9 +17,10 @@ var gutil = require('gulp-util');
 var inquirer = require('inquirer');
 
 module.exports = class Utils {
-    static findKeyInObjectArray(list, id, key) {
+    static findKeyInObjectArray(list, id, key, secondaryKey) {
         if (!key) key = "name";
-        return list.find(el => el[key] == id);
+        if (!secondaryKey) secondaryKey = "display_name";
+        return list.find(el => el[key] == id || (el[secondaryKey] && el[secondaryKey] == id));
     }
 
     static mergeObjs(obj1, obj2, overwrite) {
@@ -40,6 +41,13 @@ module.exports = class Utils {
             delete language.questions;
         if (build_tool.questions)
             delete build_tool.questions;
+        if (build_tool.dependencies)
+            project_info.dependencies = _.concat(project_info.dependencies, build_tool.dependencies);
+        if (build_tool.npm_dependencies)
+            if (project_info.npm_dependencies)
+                project_info.npm_dependencies = _.concat(project_info.npm_dependencies, build_tool.npm_dependencies);
+            else
+                project_info.npm_dependencies = build_tool.npm_dependencies;
 
         project_info = Utils.mergeObjs(project_info, language, true);
         project_info.build_tool = build_tool;
@@ -65,7 +73,12 @@ module.exports = class Utils {
     static pickSelection(message, list) {
         return new Promise((resolve, reject) => {
             if (list.length > 1) {
-                inquirer.prompt({ name: 'answer', message: message, type: 'list', choices: list }).then(function (answer) {
+                let optionsList;
+                if (list.some(el => el.display_name))
+                    optionsList = list.map(el => (el.display_name) ? el.display_name : el.name);
+                else
+                    optionsList = list;
+                inquirer.prompt({ name: 'answer', message: message, type: 'list', choices: optionsList }).then(function (answer) {
                     resolve(Utils.findKeyInObjectArray(list, answer.answer));
                 });
             } else {

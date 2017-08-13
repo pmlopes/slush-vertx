@@ -1,5 +1,3 @@
-package {{#if project_info.package}}{{ project_info.package }}.{{/if}}handlers;
-
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RequestParameters;
 import io.vertx.ext.web.RoutingContext;

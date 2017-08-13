@@ -1,6 +1,4 @@
-{{#if project_info.package}}package {{ project_info.package }};
-
-{{/if}}import io.vertx.core.AbstractVerticle
+import io.vertx.core.AbstractVerticle
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer
 import io.vertx.core.http.HttpServerOptions;
@@ -21,13 +19,13 @@ class MainVerticle extends AbstractVerticle {
 
                 // Add routes handlers
                 {{#each operations}}
-                routerFactory.addHandlerByOperationId("{{ operationId }}", new {{#if ../project_info.package}}{{ ../project_info.package }}.{{/if}}handlers.{{ class_name }}());
+                routerFactory.addHandlerByOperationId("{{ operationId }}", new {{ class_name }}());
                 {{/each}}
 
                 {{#if security_schemas}}
                 // Add security handlers
                 {{#each security_schemas}}
-                routerFactory.addSecurityHandler("{{ schema_name }}", new {{#if ../project_info.package}}{{ ../project_info.package }}.{{/if}}securityHandlers.{{ class_name }}());
+                routerFactory.addSecurityHandler("{{ schema_name }}", new {{ class_name }}());
                 {{/each}}
                 {{/if}}
 
