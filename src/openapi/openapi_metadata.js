@@ -37,7 +37,24 @@ module.exports = {
             },
             boolean: "Boolean?",
             default: "Any?"
-        }
+        },
+        groovy: { // First nested is type, second nested is format
+            object: "Map<String, Object>",
+            array: "List<Object>",
+            string: "String",
+            integer: {
+                int32: "Integer",
+                int64: "Long",
+                default: "Integer"
+            },
+            number: {
+                float: "Float",
+                double: "Double",
+                default: "Float"
+            },
+            boolean: "Boolean",
+            default: "Object"
+        },
     },
     client_parameters_functions_map: {
         default: {

@@ -85,7 +85,7 @@ public class ApiClient {
         {{#each ../parameters.path}}uri = uri.replace("{{append (prepend oasParameter.name "{") "}"}}", this.{{renderFunctionName}}("{{oasParameter.name}}", {{name}}));
         {{/each}}
 
-        HttpRequest request = client.get(uri);
+        HttpRequest request = client.{{ ../method }}(uri);
 
         MultiMap requestCookies = MultiMap.caseInsensitiveMultiMap();
         {{#each ../parameters.cookie}}if ({{name}} != null) this.{{renderFunctionName}}("{{oasParameter.name}}", {{name}}, requestCookies);

@@ -15,6 +15,7 @@
     "boilerplate"
   ],
   "author": "Paulo Lopes",
+  "contributors": ["Francesco Guardiani <francescoguard@gmail.com> (slinkydeveloper.github.io)"],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/pmlopes/slush-vertx/issues"

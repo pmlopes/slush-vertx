@@ -77,7 +77,7 @@ public class ApiClient {
 {{#each ../parameters.path}}        uri = uri.replace("{{append (prepend oasParameter.name "{") "}"}}", this.{{renderFunctionName}}("{{oasParameter.name}}", {{name}}));
 {{/each}}
 
-        var request = client.get(uri)
+        var request = client.{{ ../method }}(uri)
 
         var requestCookies = MultiMap.caseInsensitiveMultiMap()
         {{#each ../parameters.cookie}}if ({{name}} != null) this.{{renderFunctionName}}("{{oasParameter.name}}", {{name}}, requestCookies);
@@ -99,16 +99,16 @@ public class ApiClient {
     private fun attach{{capitalize sanitized_schema_name}}Security (request: HttpRequest<*>, cookies: MultiMap) {
         {{#and (compare type '==' 'http') (compare type '==' 'basic')}}
         this.addHeaderParam("Authorization", "Basic " + Base64.getEncoder()
-            .encode((this.{{sanitized_schema_name}}_username + ":" + this.{{sanitized_schema_name}}_password).getBytes())!!, request);
+            .encode((this.{{sanitized_schema_name}}_username!! + ":" + this.{{sanitized_schema_name}}_password!!).getBytes())!!, request);
         {{/and}}{{#or (and (compare type '==' 'http') (compare type '==' 'bearer')) (compare type '==' 'oauth2') (compare type '==' 'openIdConnect')}}
-        this.addHeaderParam("Authorization", "Bearer " + {{sanitized_schema_name}}_token, request);
+        this.addHeaderParam("Authorization", "Bearer " + {{sanitized_schema_name}}_token!!, request);
         {{/or}}{{#compare type '==' 'apiKey'}}
         {{#compare in '==' 'header'}}
-        this.addHeaderParam("{{name}}", this.{{sanitized_schema_name}}_token, request);
+        this.addHeaderParam("{{name}}", this.{{sanitized_schema_name}}_token!!, request);
         {{/compare}}{{#compare in '==' 'cookie'}}
-        this.renderCookieParam("{{name}}", this.{{sanitized_schema_name}}_token, cookies);
+        this.renderCookieParam("{{name}}", this.{{sanitized_schema_name}}_token!!, cookies);
         {{/compare}}{{#compare in '==' 'query'}}
-        this.addQueryParam("{{name}}", this.{{sanitized_schema_name}}_token, request);
+        this.addQueryParam("{{name}}", this.{{sanitized_schema_name}}_token!!, request);
         {{/compare}}{{/compare}}
     }
 

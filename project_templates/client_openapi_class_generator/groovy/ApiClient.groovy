@@ -1,6 +1,4 @@
-{{#if project_info.package}}package {{ project_info.package }};
-
-{{/if}}import io.vertx.core.AsyncResult;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
@@ -85,7 +83,7 @@ public class ApiClient {
         {{#each ../parameters.path}}uri = uri.replace("{{append (prepend oasParameter.name "{") "}"}}", this.{{renderFunctionName}}("{{oasParameter.name}}", {{name}}));
         {{/each}}
 
-        HttpRequest request = client.get(uri);
+        HttpRequest request = client.{{ ../method }}(uri);
 
         MultiMap requestCookies = MultiMap.caseInsensitiveMultiMap();
         {{#each ../parameters.cookie}}if ({{name}} != null) this.{{renderFunctionName}}("{{oasParameter.name}}", {{name}}, requestCookies);
