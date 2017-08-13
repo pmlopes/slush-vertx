@@ -265,7 +265,7 @@ function render(project_info) {
 }
 
 module.exports = {
-    name: "Server OpenAPI project",
+    name: "Vert.x Web Server OpenAPI project",
     generate: function (project_info, done) {
         Utils.processLanguage(languagesMetadata, project_info).then(result => {
             return Promise.all([result, Utils.processQuestions({

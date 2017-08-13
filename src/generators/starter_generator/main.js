@@ -96,7 +96,7 @@ let renderFunction = Utils.generateRenderingFunction("starter_generator");
 let generationFunction = Utils.generateGenerationFunction(languagesMetadata, renderFunction);
 
 module.exports = {
-    name: "Starter project",
+    name: "Vert.x Starter project",
     generate: generationFunction,
     render: renderFunction
 };
