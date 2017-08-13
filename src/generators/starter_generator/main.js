@@ -97,6 +97,7 @@ let generationFunction = Utils.generateGenerationFunction(languagesMetadata, ren
 
 module.exports = {
     name: "Vert.x Starter project",
+    description: "Generate an empty project configured for Vert.x 3 Framework",
     generate: generationFunction,
     render: renderFunction
 };

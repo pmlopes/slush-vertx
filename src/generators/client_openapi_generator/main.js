@@ -127,6 +127,8 @@ function render(project_info) {
 
 module.exports = {
     name: "Vert.x Web Client OpenAPI project",
+    description: "Generate a client based on a Swagger 2/OpenAPI 3 specification\n" +
+    "Give a look at the generated README.md to start using the client",
     generate: function (project_info, done) {
         Utils.processLanguage(languagesMetadata, project_info).then(result => {
             return Promise.all([result, Utils.processQuestions({

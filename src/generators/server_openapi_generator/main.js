@@ -266,6 +266,8 @@ function render(project_info) {
 
 module.exports = {
     name: "Vert.x Web Server OpenAPI project",
+    description: "Generate a skeleton based on Swagger 2/OpenAPI 3 specification with sources and tests for Vert.x 3 Web powered REST server\n" +
+    "The project generated will use vertx-web-api-contract-openapi to generate the Router and validate the requests",
     generate: function (project_info, done) {
         Utils.processLanguage(languagesMetadata, project_info).then(result => {
             return Promise.all([result, Utils.processQuestions({

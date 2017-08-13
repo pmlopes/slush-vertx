@@ -73,13 +73,9 @@ module.exports = class Utils {
     static pickSelection(message, list) {
         return new Promise((resolve, reject) => {
             if (list.length > 1) {
-                let optionsList;
-                if (list.some(el => el.display_name))
-                    optionsList = list.map(el => (el.display_name) ? el.display_name : el.name);
-                else
-                    optionsList = list;
+                let optionsList = list.map(el => (el.display_name) ? {name: el.display_name, value: el} : {name: el.name, value: el});
                 inquirer.prompt({ name: 'answer', message: message, type: 'list', choices: optionsList }).then(function (answer) {
-                    resolve(Utils.findKeyInObjectArray(list, answer.answer));
+                    resolve(answer.answer);
                 });
             } else {
                 resolve(list[0]);
@@ -141,17 +137,6 @@ module.exports = class Utils {
             result.push(Handlebars.compile(templateSource, {noEscape: true}));
         });
         return result;
-    }
-
-    static writeFilesSync(file_relative_paths, file_contents, path_to_prepend) {
-        for (let i = 0; i < file_relative_paths.length; i++) {
-            if (path_to_prepend)
-                var finalPath = path.join(process.cwd(), path_to_prepend, file_relative_paths[i]);
-            else
-                var finalPath = path.join(process.cwd(), file_relative_paths[i]);
-            fs.mkdirpSync(path.dirname(finalPath));
-            fs.writeFileSync(finalPath, file_contents[i],'utf-8')
-        }
     }
 
     static writeFilesArraySync(files) {

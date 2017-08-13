@@ -96,6 +96,7 @@ let generationFunction = Utils.generateGenerationFunction(languagesMetadata, ren
 
 module.exports = {
     name: "Vert.x Web Server Starter",
+    description: "Generate a skeleton with sources and tests for Vert.x 3 Web powered REST server",
     generate: generationFunction,
     render: renderFunction
 };

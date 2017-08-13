@@ -23,7 +23,7 @@ fs.readdirSync(path.join(__src, "generators")).forEach((el) => {
   try {
       let gen = require(path.join(__src, "generators", el, "main.js"));
       if (_.isString(gen.name) && _.isFunction(gen.generate) && (_.hasIn(argv, "hidden") || !_.hasIn(gen, "hidden") || gen.hidden == false))
-          generators.push({name: gen.name, value: gen.generate});
+          generators.push({name: gen.name, value: gen});
   } catch (e) {
       console.error(e)
   }
@@ -48,7 +48,11 @@ function start(done) {
         {type: 'list', name: 'generator', message: 'Choose the generator you want to run: ', choices: generators}
     ]).then((answers) => {
         project_info.project_name = answers.name.replace(" ", "-");
-        answers.generator(project_info, done);
+        console.log("\nStarted generator " + gutil.colors.cyan(answers.generator.name));
+        if (answers.generator.description)
+            console.log(gutil.colors.cyan(answers.generator.description));
+        console.log();
+        answers.generator.generate(project_info, done);
     });
 }
 
