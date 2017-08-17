@@ -1,17 +1,17 @@
 {
-  "name": "{{ projectName }}",
+  "name": "{{dashcase project_name}}",
   "version": "0.0.1",
 
   "scripts": {
     "build": "rm -f {{dashcase project_name}}.jar && ./node_modules/.bin/webpack",
 
     "prestart": "npm run build",
-    "start": "./node_modules/.bin/vertx run -cp {{dashcase project_name}}.jar -conf config.json js:bundle.js",
+    "start": "./node_modules/.bin/vertx run -cp {{dashcase project_name}}.jar {{#if templates.config}}-conf {{#if config_dir}}{{config_dir}}/{{/if}}config.json{{/if}} js:bundle.js",
 
-    "watch": "npm run start -- --redeploy=\"src/**\" --on-redeploy=\"npm run watch\""{{#if has_tests}},
+    "watch": "npm run start -- --redeploy=\"src/**\" --on-redeploy=\"npm run watch\""{{#if templates.test}},
 
     "pretest": "npm run build && rm -Rf build_test && mkdir build_test && ./node_modules/.bin/babel --presets=es2015 --out-dir build_test {{ test_dir }}",
-    "test": "cd build_test && for i in *.js; do ../node_modules/.bin/vertx test --classpath ../{{dashcase project_name}}.jar $i; done"{{/if}}
+    "test": "cd build_test && for i in $(ls | egrep '.*[tT]{1}est\\.js'); do ../node_modules/.bin/vertx test --classpath ../{{dashcase project_name}}.jar $i; done"{{/if}}
   },
 
   "dependencies": {

@@ -36,7 +36,7 @@ module.exports = {
         npm_with_jar: {
             name: "npm_with_jar",
             display_name: "npm with jar packaging",
-            templates: ["package.json", "webpack.config.js", ".babelrc", "pom.xml"]
+            templates: ["package.json", "webpack.config.js", ".babelrc", "pom.xml", "Build.md"]
         }
     },
     questions: {

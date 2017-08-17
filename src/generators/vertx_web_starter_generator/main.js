@@ -75,8 +75,7 @@ let languagesMetadata = [
         main: "main.js",
         src_dir: "src",
         test_dir: "test",
-        config_dir: "",
-        has_tests: true
+        config_dir: ""
     },
     {
         name: "kotlin",
