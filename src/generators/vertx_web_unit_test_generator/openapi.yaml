@@ -3,7 +3,7 @@ info:
   version: 0.0.1
   title: OpenAPI 3 Parameter Validation Compatibility Test
 paths:
-  '/path/matrix/noexplode/string/{color}':
+  '/path/matrix/noexplode/string/{;color}':
     get:
       parameters:
         - name: color
@@ -27,7 +27,7 @@ paths:
           description: Wrong validation
         default:
           description: Default response
-  '/path/matrix/noexplode/array/{color}':
+  '/path/matrix/noexplode/array/{;color}':
     get:
       parameters:
         - name: color
@@ -51,7 +51,7 @@ paths:
           description: Wrong validation
         default:
           description: Default response
-  '/path/matrix/noexplode/object/{color}':
+  '/path/matrix/noexplode/object/{;color}':
     get:
       parameters:
         - name: color
@@ -76,7 +76,7 @@ paths:
         default:
           description: Default response
 
-  '/path/matrix/explode/string/{color}':
+  '/path/matrix/explode/string/{;color*}':
     get:
       parameters:
         - name: color
@@ -100,7 +100,7 @@ paths:
           description: Wrong validation
         default:
           description: Default response
-  '/path/matrix/explode/array/{color}':
+  '/path/matrix/explode/array/{;color*}':
     get:
       parameters:
         - name: color
@@ -124,7 +124,7 @@ paths:
           description: Wrong validation
         default:
           description: Default response
-  '/path/matrix/explode/object/{color}':
+  '/path/matrix/explode/object/{;color*}':
     get:
       parameters:
         - name: color
@@ -150,7 +150,7 @@ paths:
           description: Default response
 
 
-  '/path/label/noexplode/string/{color}':
+  '/path/label/noexplode/string/{.color}':
     get:
       parameters:
         - name: color
@@ -174,7 +174,7 @@ paths:
           description: Wrong validation
         default:
           description: Default response
-  '/path/label/noexplode/array/{color}':
+  '/path/label/noexplode/array/{.color}':
     get:
       parameters:
         - name: color
@@ -198,7 +198,7 @@ paths:
           description: Wrong validation
         default:
           description: Default response
-  '/path/label/noexplode/object/{color}':
+  '/path/label/noexplode/object/{.color}':
     get:
       parameters:
         - name: color
@@ -223,7 +223,7 @@ paths:
         default:
           description: Default response
 
-  '/path/label/explode/string/{color}':
+  '/path/label/explode/string/{.color*}':
     get:
       parameters:
         - name: color
@@ -247,7 +247,7 @@ paths:
           description: Wrong validation
         default:
           description: Default response
-  '/path/label/explode/array/{color}':
+  '/path/label/explode/array/{.color*}':
     get:
       parameters:
         - name: color
@@ -271,7 +271,7 @@ paths:
           description: Wrong validation
         default:
           description: Default response
-  '/path/label/explode/object/{color}':
+  '/path/label/explode/object/{.color*}':
     get:
       parameters:
         - name: color
@@ -370,7 +370,7 @@ paths:
         default:
           description: Default response
 
-  '/path/simple/explode/string/{color}':
+  '/path/simple/explode/string/{color*}':
     get:
       parameters:
         - name: color
@@ -394,7 +394,7 @@ paths:
           description: Wrong validation
         default:
           description: Default response
-  '/path/simple/explode/array/{color}':
+  '/path/simple/explode/array/{color*}':
     get:
       parameters:
         - name: color
@@ -418,7 +418,7 @@ paths:
           description: Wrong validation
         default:
           description: Default response
-  '/path/simple/explode/object/{color}':
+  '/path/simple/explode/object/{color*}':
     get:
       parameters:
         - name: color
@@ -443,7 +443,7 @@ paths:
         default:
           description: Default response
 
-  /path/multi/{color_simple}{color_label}/test:
+  /path/multi/{color_simple}{.color_label}/test:
     get:
       parameters:
         - name: color_simple
@@ -499,7 +499,7 @@ paths:
         default:
           description: Default response
 
-  /path/multi/{color_simple}{color_matrix}/test:
+  /path/multi/{color_simple}{;color_matrix}/test:
     get:
       parameters:
         - name: color_simple
@@ -555,7 +555,7 @@ paths:
         default:
           description: Default response
 
-  /path/multi/{color_label}{color_matrix}/test:
+  /path/multi/{.color_label}{;color_matrix*}/test:
     get:
       parameters:
         - name: color_label

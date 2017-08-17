@@ -12,6 +12,9 @@ var helpers = require('handlebars-helpers')();
 Handlebars.registerHelper('escape', function(variable) {
     return variable.replace(/(['"])/g, '\\$1');
 });
+Handlebars.registerHelper('raw-helper', function(options) {
+    return options.fn();
+});
 
 var gutil = require('gulp-util');
 var inquirer = require('inquirer');

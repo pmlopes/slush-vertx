@@ -79,9 +79,10 @@ public class ApiClient {
         {{/if}}{{/each}}
 
         // Generate the uri
-        String uri = "{{../path}}";
+        String uri = "{{../path}}";{{#if ../parameters.path}}
+        {{{{raw-helper}}}}uri = uri.replaceAll("\\{{1}([.;?*+]*([^\\{\\}.;?*+]+)[^\\}]*)\\}{1}", "{$2}") //Remove * . ; ? from url template{{{{/raw-helper}}}}
         {{#each ../parameters.path}}uri = uri.replace("{{append (prepend oasParameter.name "{") "}"}}", this.{{renderFunctionName}}("{{oasParameter.name}}", {{name}}));
-        {{/each}}
+        {{/each}}{{/if}}
 
         HttpRequest request = client.{{ ../method }}(uri);
 
