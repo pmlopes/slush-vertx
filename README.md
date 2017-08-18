@@ -34,7 +34,11 @@ $ npm install -g gulp slush slush-vertx
 
 ## Usage
 
+Example of Vert.x Starter generator
 [![asciicast](./demo.gif)](https://asciinema.org/a/lR23OQrMnDY6zZNggh8kgUAE4)
+
+Example of Vert.x Web Starter generator
+[![asciicast](./demo2.gif)](https://asciinema.org/a/DOZ639zUxksoMo4PxDUc12sNO)
 
 ## Contribute
 
