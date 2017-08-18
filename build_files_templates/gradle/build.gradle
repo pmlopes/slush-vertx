@@ -1,0 +1,48 @@
+buildscript {
+  repositories {
+    mavenCentral()
+    jcenter()
+  }
+
+  dependencies {
+    {{#compare language '==' "kotlin"}}
+    classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.1.0'
+    {{/compare}}
+    classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.4'
+  }
+}
+
+{{#compare language '==' "kotlin"}}apply plugin: 'kotlin'
+{{/compare}}{{#compare language '==' "groovy"}}apply plugin: 'groovy'
+{{/compare}}apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+repositories {
+  mavenCentral()
+}
+
+version = '0.0.1'
+group = '{{dashcase project_name}}'
+sourceCompatibility = '1.8'
+mainClassName = 'io.vertx.core.Launcher'
+
+dependencies {
+{{#each dependencies}}{{#if test}}  testCompile '{{group}}:{{artifact}}:{{version}}'
+{{else}}  compile '{{group}}:{{artifact}}:{{version}}'
+{{/if}}{{/each}}
+}
+
+shadowJar {
+  classifier = 'fat'
+  manifest {
+    attributes 'Main-Verticle': '{{main}}'
+  }
+  mergeServiceFiles {
+    include 'META-INF/services/io.vertx.core.spi.VerticleFactory'
+  }
+}
+
+task wrapper(type: Wrapper) {
+  gradleVersion = '2.13'
+}

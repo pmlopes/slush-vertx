@@ -1,0 +1,29 @@
+{
+  "name": "{{dashcase project_name}}",
+  "version": "0.0.1",
+
+  "scripts": {
+    "build": "rm -f {{dashcase project_name}}.jar && ./node_modules/.bin/webpack",
+
+    "prestart": "npm run build",
+    "start": "./node_modules/.bin/vertx run -cp {{dashcase project_name}}.jar {{#if templates.config}}-conf {{#if config_dir}}{{config_dir}}/{{/if}}config.json{{/if}} js:bundle.js",
+
+    "watch": "npm run start -- --redeploy=\"src/**\" --on-redeploy=\"npm run watch\""{{#if templates.test}},
+
+    "pretest": "npm run build && rm -Rf build_test && mkdir build_test && ./node_modules/.bin/babel --presets=es2015 --out-dir build_test {{ test_dir }}",
+    "test": "cd build_test && for i in $(ls | egrep '.*[tT]{1}est\\.js'); do ../node_modules/.bin/vertx test --classpath ../{{dashcase project_name}}.jar $i; done"{{/if}}
+  },
+
+  "dependencies": {
+  },
+
+  "devDependencies": {
+    "babel-core": "^6.22.1",
+    "babel-loader": "^6.2.10",
+    "babel-preset-es2015": "^6.22.0",
+    "webpack": "^2.2.0",
+    "webpack-vertx-plugin": "^0.0.1",
+    "babel-cli": "6.2.0",
+    "vertx3-min": "3.4.2"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "{{dashcase project_name}}",
+  "scripts": {
+    "build": "rm -Rf bin && mkdir bin && ./node_modules/.bin/babel --presets=es2015 --out-dir bin {{ src_dir }}",
+    "start": "./node_modules/.bin/vertx run bin/{{main}}"
+  },
+  "dependencies": {
+    {{#each npm_dependencies}}
+    "{{ name }}": "{{ version }}"{{#unless @last}},{{/unless}}
+    {{/each}}
+  }
+}
