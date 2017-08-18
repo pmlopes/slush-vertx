@@ -34,7 +34,7 @@ $ npm install -g gulp slush slush-vertx
 
 ## Usage
 
-[![asciicast](demo.gif)](https://asciinema.org/a/lR23OQrMnDY6zZNggh8kgUAE4)
+[![asciicast](./demo.gif)](https://asciinema.org/a/lR23OQrMnDY6zZNggh8kgUAE4)
 
 ## Contribute
 
