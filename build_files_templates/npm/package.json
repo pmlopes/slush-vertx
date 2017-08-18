@@ -2,7 +2,10 @@
   "name": "{{dashcase project_name}}",
   "scripts": {
     "build": "rm -Rf bin && mkdir bin && ./node_modules/.bin/babel --presets=es2015 --out-dir bin {{ src_dir }}",
-    "start": "./node_modules/.bin/vertx run bin/{{main}}"
+    "start": "./node_modules/.bin/vertx run {{#if templates.config}}-conf {{#if config_dir}}{{config_dir}}/{{/if}}config.json{{/if}} bin/{{main}}"{{#if templates.test}},
+
+    "pretest": "npm run build && rm -Rf build_test && mkdir build_test && ./node_modules/.bin/babel --presets=es2015 --out-dir build_test {{ test_dir }}",
+    "test": "cd build_test && for i in $(ls | egrep '.*[tT]{1}est\\.js'); do ../node_modules/.bin/vertx test --classpath ../{{dashcase project_name}}.jar $i; done"{{/if}}
   },
   "dependencies": {
     {{#each npm_dependencies}}
