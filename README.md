@@ -1,5 +1,9 @@
 # slush-vertx
 
+[![npm](https://img.shields.io/npm/dw/localeval.svg)]()
+[![npm](https://img.shields.io/npm/v/npm.svg)]()
+[![Twitter URL](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)]()
+
 Scaffold with [Slush][slush-url] your new Vert.x application!
 
 slush-vertx is a collection of template driven code generators to scaffold Vert.x projects based on language and build tool used.
