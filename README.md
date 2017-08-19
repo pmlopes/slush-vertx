@@ -1,8 +1,8 @@
 # slush-vertx
 
-[![npm](https://img.shields.io/npm/dw/localeval.svg)]()
-[![npm](https://img.shields.io/npm/v/npm.svg)]()
-[![Twitter URL](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)]()
+[![NPM](https://nodei.co/npm/slush-vertx.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/slush-vertx/)
+
+[![Twitter](https://img.shields.io/twitter/url/https/github.com/pmlopes/slush-vertx.svg?style=social)](https://twitter.com/intent/tweet?text=Wow:&url=%5Bobject%20Object%5D)
 
 Scaffold with [Slush][slush-url] your new Vert.x application!
 
