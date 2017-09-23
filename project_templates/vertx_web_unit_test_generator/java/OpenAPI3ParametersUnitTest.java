@@ -1,7 +1,8 @@
 {{#if project_info.package}}package {{ project_info.package }};
 
-{{/if}}import com.reprezen.kaizen.oasparser.OpenApiParser;
-import com.reprezen.kaizen.oasparser.model3.OpenApi3;
+{{/if}}import io.swagger.oas.models.OpenAPI;
+import io.swagger.parser.models.ParseOptions;
+import io.swagger.parser.v3.OpenAPIV3Parser;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerOptions;
@@ -30,7 +31,7 @@ import java.util.stream.Collectors;
  */
 public class OpenAPI3ParametersUnitTest extends WebTestValidationBase {
 
-  OpenApi3 spec;
+  OpenAPI spec;
   ApiClient apiClient;
   OpenAPI3RouterFactory routerFactory;
 
@@ -38,7 +39,7 @@ public class OpenAPI3ParametersUnitTest extends WebTestValidationBase {
   public ExternalResource resource = new ExternalResource() {
     @Override
     protected void before() throws Throwable {
-      spec = loadSwagger("src/test/resources/swaggers/openapi.yaml");
+      spec = loadSwagger("./src/test/resources/swaggers/openapi.yaml");
     }
 
     @Override
@@ -136,8 +137,8 @@ public class OpenAPI3ParametersUnitTest extends WebTestValidationBase {
 
   {{/forOwn}}
 
-  private OpenApi3 loadSwagger(String filename) {
-    return (OpenApi3) new OpenApiParser().parse(new File(filename), false);
+  private OpenAPI loadSwagger(String filename) {
+    return new OpenAPIV3Parser().readLocation(filename, null, null).getOpenAPI();
   }
 
   public Handler<RoutingContext> generateFailureHandler() {
