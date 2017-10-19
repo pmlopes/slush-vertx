@@ -4,7 +4,7 @@
 
 let _ = require('lodash');
 let metadata = require('./openapi_metadata');
-let Utils = require("../Utils.class");
+let Utils = require("../Utils");
 
 let deref = require('json-schema-ref-parser');
 let oasConverter = require('swagger2openapi');

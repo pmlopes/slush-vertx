@@ -7,7 +7,7 @@ var constants = require('./constants');
 
 module.exports = {
     build_tools: {
-        maven: {
+        maven: { //TODO refactor with new convention of metadatas
             name: "maven",
             templates: ["pom.xml"]
         },
@@ -48,21 +48,6 @@ module.exports = {
     },
     resources_dir: path.join("src", "main","resources"),
     dependencies: {
-        java_dependencies: [
-            {
-                group: "io.vertx",
-                artifact: "vertx-core",
-                version: constants.VERTX_VERSION
-            }
-        ],
-        java_test_dependencies: [
-            {
-                group: "junit",
-                artifact: "junit",
-                version: "4.12",
-                test: true
-            }
-        ],
         kotlin_dependencies: [
             {
                 group: "io.vertx",
@@ -143,5 +128,28 @@ module.exports = {
         package: (language) => language.package.trim().replace(/^\.+(.+)/, "").replace(/(.+)\.+$/, ""), // function to trim package name and remove left and side undesired points
         src_dir: (language) => path.join(...(["src", "main", language.name].concat(language.package.split(".")))),
         test_dir: (language) => path.join(...(["src", "test", language.name].concat(language.package.split("."))))
+    },
+    languages: {
+        java: {
+            build_tools: {
+                maven: this.build_tools.maven,
+                gradle: this.build_tools.gradle
+            },
+            dependencies: [
+                {
+                    group: "io.vertx",
+                    artifact: "vertx-core",
+                    version: constants.VERTX_VERSION
+                }
+            ],
+            test_dependencies: [
+                {
+                    group: "junit",
+                    artifact: "junit",
+                    version: "4.12",
+                    test: true
+                }
+            ]
+        }
     }
 }

@@ -20,16 +20,62 @@ var gutil = require('gulp-util');
 var inquirer = require('inquirer');
 
 module.exports = class Utils {
-    static findKeyInObjectArray(list, id, key, secondaryKey) {
-        if (!key) key = "name";
-        if (!secondaryKey) secondaryKey = "display_name";
-        return list.find(el => el[key] == id || (el[secondaryKey] && el[secondaryKey] == id));
+    static mergeUnique(destination, source, comparator) {
+        for (let x of source) {
+            if (destination.find((y) => comparator(x, y)) == undefined)
+                destination.push(x);
+        }
+        return destination
     }
 
+    /**
+     * This function merges obj2 into obj1. Attention: It mutates obj1
+     * @param obj1
+     * @param obj2
+     * @param overwrite
+     * @return obj1
+     */
     static mergeObjs(obj1, obj2, overwrite) {
         if (!_.isEmpty(obj2))
             Object.keys(obj2).forEach((key) => { if (overwrite || obj1[key] == undefined) obj1[key] = obj2[key] } );
         return obj1
+    }
+
+    static smartMergeObjects(destination, source, exclude) {
+        if (!_.isEmpty(source)) {
+            Object.keys(source).forEach((key) => {
+                if (!exclude.includes(key)) {
+                    if (!_.has(destination, key))
+                        destination[key] = source[key];
+                    else {
+                        if (_.isArray(destination[key]) && _.isArray(source[key]))
+                            destination[key].concat(...source[key]);
+                        else if (_.isObject(destination[key]) && _.isObject(source[key]))
+                            Utils.smartMergeObjects(destination[key], source[key]);
+                        else
+                            destination[key] = source[key];
+                    }
+                }
+            });
+        }
+    }
+
+    static processVariablesTemplates(obj, var_templates) {
+        if (var_templates) {
+            Object.keys(var_templates).forEach((key) => {
+                if (var_templates[key] instanceof Function)
+                    _.set(obj, key.split("."), var_templates[key](obj));
+                else
+                    _.set(obj, key.split("."), format(var_templates[key], obj));
+            });
+        }
+        return obj;
+    }
+
+    static findKeyInObjectArray(list, id, key, secondaryKey) {
+        if (!key) key = "name";
+        if (!secondaryKey) secondaryKey = "display_name";
+        return list.find(el => el[key] == id || (el[secondaryKey] && el[secondaryKey] == id));
     }
 
     static buildProjectObject(project_info, language, build_tool) {
@@ -149,18 +195,6 @@ module.exports = class Utils {
             gutil.log("Writing file ", gutil.colors.cyan(path.relative(process.cwd(), finalPath)));
             fs.writeFileSync(finalPath, files[i].content, 'utf-8');
         }
-    }
-
-    static processVariablesTemplates(obj, var_templates) {
-        if (var_templates) {
-            Object.keys(var_templates).forEach((key) => {
-                if (var_templates[key] instanceof Function)
-                    obj[key] = var_templates[key](obj);
-                else
-                    obj[key] = format(var_templates[key], obj)
-            });
-        }
-        return obj;
     }
 
     static processQuestions(questions, var_templates, project_info) {

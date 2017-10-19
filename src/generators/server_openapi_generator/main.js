@@ -293,5 +293,11 @@ module.exports = {
             done();
         }).catch(error => done(new gutil.PluginError('new', error.stack)));
     },
-    render: render
+    render: render,
+    dependencies: {
+        "client_openapi_class_generator": {
+            afterProjectInfoBuild: (dependency_project_info, project_info) => {},
+            afterRender: (rendered, dependency_project_info, project_info) => {} //TODO transform rendered objects (add in render results the id of file)
+        }
+    }
 };

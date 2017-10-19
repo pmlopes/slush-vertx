@@ -1,11 +1,6 @@
+require('./init');
+
 let path = require('path');
-
-/* Setting global dirs variables */
-global.__root = path.resolve(__dirname);
-global.__src = path.join(__root, "src");
-global.__project_templates = path.join(__root, "project_templates");
-global.__build_files_templates = path.join(__root, "build_files_templates");
-
 let fs = require('fs');
 let exec = require('child_process').exec;
 
@@ -17,19 +12,8 @@ let _ = require('lodash');
 
 let Utils = require('./src/Utils.class');
 
-// Load generators during slushfile.js bootstrap
-var generators = [];
-fs.readdirSync(path.join(__src, "generators")).forEach((el) => {
-  try {
-      let gen = require(path.join(__src, "generators", el, "main.js"));
-      if (_.isString(gen.name) && _.isFunction(gen.generate) && (_.hasIn(argv, "hidden") || !_.hasIn(gen, "hidden") || gen.hidden == false))
-          generators.push({name: gen.name, value: gen});
-  } catch (e) {
-      console.error(e)
-  }
-});
-
 function start(done) {
+    //TODO CLEAN THAT CODE
     var project_info = {};
 
     var base = process.cwd();
@@ -42,6 +26,12 @@ function start(done) {
 
     if (!Utils.checkIfDirIsEmpty(project_info.root_dir))
         done(new gutil.PluginError('new', 'A project already exists! Please remove it first.'));
+    //TODO-------------------------
+
+    let generators = __generators
+        .filter(value => _.hasIn(gen, "hidden") || !_.hasIn(gen, "hidden") || gen.hidden == false) //TODO Maybe i need to rewrite it?
+        .map(gen => ({name: gen.name, value: gen}));
+
 
     inquirer.prompt([
         {name: 'name', message: 'Project name:', default: path.basename(base)},
