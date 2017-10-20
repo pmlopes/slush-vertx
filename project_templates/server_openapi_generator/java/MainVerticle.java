@@ -3,7 +3,7 @@
 {{/if}}import io.vertx.core.AbstractVerticle;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerOptions;
-import io.vertx.ext.web.designdriven.openapi3.OpenAPI3RouterFactory;
+import io.vertx.ext.web.api.contract.openapi3.OpenAPI3RouterFactory;
 import io.vertx.ext.web.Router;
 import io.vertx.core.Future;
 
@@ -13,7 +13,7 @@ public class MainVerticle extends AbstractVerticle {
 
   @Override
   public void start(Future future) {
-    OpenAPI3RouterFactory.createRouterFactoryFromURL(this.vertx, getClass().getResource("/{{ project_info.spec_filename }}").toString(), false, openAPI3RouterFactoryAsyncResult -> {
+    OpenAPI3RouterFactory.createRouterFactoryFromFile(this.vertx, getClass().getResource("/{{ project_info.spec_filename }}").getFile(), openAPI3RouterFactoryAsyncResult -> {
       if (openAPI3RouterFactoryAsyncResult.succeeded()) {
         OpenAPI3RouterFactory routerFactory = openAPI3RouterFactoryAsyncResult.result();
 

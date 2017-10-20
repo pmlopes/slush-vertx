@@ -1,5 +1,5 @@
 import io.vertx.core.Handler;
-import io.vertx.ext.web.RequestParameters;
+import io.vertx.ext.web.api.RequestParameters;
 import io.vertx.ext.web.RoutingContext;
 
 class {{ operation.class_name }} implements Handler<RoutingContext> {

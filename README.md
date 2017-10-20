@@ -44,6 +44,17 @@ Example of Vert.x Web Starter generator
 
 If you want to add a generator, add templates to an existing generator or something else give a look at [how to contribute](https://github.com/pmlopes/slush-vertx/wiki/How-to-contribute)
 
+## Changelog
+
+### 0.0.3
+
+* Fixed templates for Vert.x 3.5.0 release
+* Updated `swagger2openapi`
+
+### 0.0.2
+
+* New life to the project!
+
 ## License
 
 MIT © [Paulo Lopes](http://jetdrone.xyz) and [Francesco Guardiani](http://slinkydeveloper.github.io)

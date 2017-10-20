@@ -1,4 +1,6 @@
-import io.vertx.core.DeploymentOptions;
+{{#if project_info.package}}package {{ project_info.package }};
+
+{{/if}}import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.ext.unit.Async;

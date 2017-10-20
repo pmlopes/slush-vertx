@@ -1,6 +1,6 @@
 {
   "name": "slush-vertx",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "Scaffold tool for vertx",
   "repository": {
     "type": "git",

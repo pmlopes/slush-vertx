@@ -2,7 +2,7 @@ import io.vertx.core.AbstractVerticle
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer
 import io.vertx.core.http.HttpServerOptions;
-import io.vertx.ext.web.designdriven.openapi3.OpenAPI3RouterFactory;
+import io.vertx.ext.web.api.contract.openapi3.OpenAPI3RouterFactory;
 import io.vertx.core.Future;
 
 class MainVerticle extends AbstractVerticle {
@@ -11,7 +11,7 @@ class MainVerticle extends AbstractVerticle {
 
     @Override
     void start(Future future) {
-        OpenAPI3RouterFactory.createRouterFactoryFromURL(this.vertx, getClass().getResource("/{{ project_info.spec_filename }}").toString(), false, {
+        OpenAPI3RouterFactory.createRouterFactoryFromFile(this.vertx, getClass().getResource("/{{ project_info.spec_filename }}").getFile(), {
             if (it.succeeded()) {
                 def routerFactory = it.result();
 

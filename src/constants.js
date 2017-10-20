@@ -3,5 +3,5 @@
  */
 
 module.exports = {
-    VERTX_VERSION: "3.4.2"
+    VERTX_VERSION: "3.5.0"
 }
