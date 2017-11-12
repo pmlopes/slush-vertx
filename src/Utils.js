@@ -12,18 +12,23 @@ var helpers = require('handlebars-helpers')();
 Handlebars.registerHelper('escape', function(variable) {
     return variable.replace(/(['"])/g, '\\$1');
 });
+
 Handlebars.registerHelper('raw-helper', function(options) {
     return options.fn();
 });
+
+const HANDLEBARS_CONFIG = {noEscape: true};
+
+const compileTemplate = (t) => Handlebars.compile(t, HANDLEBARS_CONFIG);
 
 var gutil = require('gulp-util');
 var inquirer = require('inquirer');
 
 module.exports = class Utils {
-    static mergeUnique(destination, source, comparator) {
+    static mergeUnique(destination, source, comparator = ((x, y) => x == y), clonator = ((q) => _.cloneDeep(q))) {
         for (let x of source) {
-            if (destination.find((y) => comparator(x, y)) == undefined)
-                destination.push(x);
+            if (_.isUndefined(destination.find((y) => comparator(x, y))))
+                destination.push(clonator(x));
         }
         return destination
     }
@@ -139,32 +144,30 @@ module.exports = class Utils {
     }
 
     static loadGeneratorTemplates(templates, generator_key, language_key = null) {
-        let result;
-        let templatesDir;
-        if (language_key)
-            templatesDir = path.resolve(path.join(__project_templates, generator_key, language_key));
-        else
-            templatesDir = path.resolve(path.join(__project_templates, generator_key));
-        if (templates instanceof Array) {
-            result = [];
-            templates = templates.map((template) => path.join(templatesDir, template));
-            templates.forEach((templatePath) => {
-                try {
-                    let templateSource = fs.readFileSync(templatePath, 'utf-8');
-                    result.push(Handlebars.compile(templateSource, {noEscape: true}));
-                } catch (e) {}
-            });
-        } else {
-            result = {};
-            Object.keys(templates).map((key) => {
-                try {
-                    let templateSource = fs.readFileSync(path.join(templatesDir, templates[key]), 'utf-8');
-                    result[key] = Handlebars.compile(templateSource, {noEscape: true});
-                } catch (e) {}
-            });
+        let templatesDir = path.resolve((language_key) ?
+            path.join(__project_templates, generator_key, language_key) :
+            path.join(__project_templates, generator_key));
 
-        }
-        return result;
+        const readFile = (t) => fs.readFile(path.join(templatesDir, t), 'utf-8');
+
+        if (templates instanceof Array) {
+            return Promise
+                .all(templates.map(readFile)) // Read files
+                .then((result) => Promise.resolve(result.map(compileTemplate))); // Compile templates
+        } else if (templates instanceof Object) {
+            return Promise
+                .all(_.values(templates).map(t => {
+                    if (t instanceof String) // If instance of string, load template
+                        return readFile(t);
+                    else if (t instanceof Array) // Nested array, call itself
+                        return Utils.loadGeneratorTemplates(templates, generator_key, language_key);
+                    else
+                        Promise.reject("Wrong templates object");
+                })) // Read files
+                .then((result) => Promise.resolve(result.map(compileTemplate))) // Compile templates
+                .then((result) => Promise.resolve(_.zipObject(_.keys(templates), result))); // Rebuild object
+        } else
+            return Promise.reject("Wrong templates object");
     }
 
     static loadSingleTemplate(template, generator_key, language_key = undefined) {
@@ -178,14 +181,10 @@ module.exports = class Utils {
     }
 
     static loadBuildFilesTemplates(templates, build_file_key) {
-        let result = [];
-        let buildFilesDir = path.resolve(path.join(__build_files_templates, build_file_key));
-        templates = templates.map((template) => path.join(buildFilesDir, template));
-        templates.forEach((templatePath) => {
-            let templateSource = fs.readFileSync(templatePath, 'utf-8');
-            result.push(Handlebars.compile(templateSource, {noEscape: true}));
-        });
-        return result;
+        const readFile = (t) => fs.readFile(path.resolve(path.join(__build_files_templates, build_file_key, t)), 'utf-8');
+        return Promise
+            .all(templates.map(readFile))
+            .then((result) => Promise.resolve(result.map(compileTemplate)));
     }
 
     static writeFilesArraySync(files) {
@@ -252,32 +251,6 @@ module.exports = class Utils {
                     templatesFunctions.map(template => template(project_info)), // Render templates
                     (path, content) => new Object({path: path, content: content}) // Push into the array in a form {path: path, content: content}
                 ),
-                _.zipWith(
-                    project_info.build_tool.templates,
-                    buildFilesTemplatesFunctions.map(template => template(project_info)),
-                    (path, content) => new Object({path: path, content: content})
-                )
-            )
-        }
-    }
-
-    static generateComplexRenderingFunction(generator_name) {
-        return function (project_info) {
-
-            let result = [];
-            _.forOwn(project_info.templates, (value, key) => {
-                let templatesFunctions = Utils.loadGeneratorTemplates(value, generator_name, project_info.language);
-                result = _.concat(result, _.zipWith(
-                    value.map(p => path.join(project_info[key + "_dir"], p)),
-                    templatesFunctions.map(template => template(project_info)),
-                    (path, content) => new Object({path: path, content: content})
-                ));
-            });
-
-            let buildFilesTemplatesFunctions = Utils.loadBuildFilesTemplates(project_info.build_tool.templates, project_info.build_tool.name);
-
-            return _.concat(
-                result,
                 _.zipWith(
                     project_info.build_tool.templates,
                     buildFilesTemplatesFunctions.map(template => template(project_info)),

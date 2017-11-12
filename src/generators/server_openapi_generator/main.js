@@ -267,7 +267,7 @@ function render(project_info) {
 module.exports = {
     name: "Vert.x Web Server OpenAPI project",
     description: "Generate a skeleton based on Swagger 2/OpenAPI 3 specification with sources and tests for Vert.x 3 Web powered REST server\n" +
-    "The project generated will use vertx-web-api-contract-openapi to generate the Router and validate the requests",
+    "The project generated will use vertx-web-api-contract to generate the Router and validate the requests",
     generate: function (project_info, done) {
         Utils.processLanguage(languagesMetadata, project_info).then(result => {
             return Promise.all([result, Utils.processQuestions({
@@ -293,7 +293,9 @@ module.exports = {
             done();
         }).catch(error => done(new gutil.PluginError('new', error.stack)));
     },
+    afterProjectInfoBuild: undefined,
     render: render,
+    afterRender: undefined,
     dependencies: {
         "client_openapi_class_generator": {
             afterProjectInfoBuild: (dependency_project_info, project_info) => {},

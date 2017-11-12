@@ -10,6 +10,8 @@ class GenerationEngine {
 
         this.dependencies = (this.generator.dependencies) ? this.generator.dependencies.map(dep_id => new GenerationEngine(project_name, dep_id, language_id, build_tool_id, _.cloneDeep(answers))) : [];
 
+        this.name = this.generator.name;
+
         this.project_name = project_name;
         this.generator_id = generator_id;
         this.language_id = language_id;
@@ -41,45 +43,100 @@ class GenerationEngine {
         this.dependencies.forEach((dep) => dep.buildProjectInfo());
     }
 
-    render() {
-        if (!_.isObject(this.project_info))
-            this.buildProjectInfo();
-        // TODO from here render
-        if (this.generator.render) // Generator has its own generation function
-            this.renderResults = this.generator.render(this.project_info);
-        else {
-            this.renderResults = [];
-            _.forOwn(project_info.templates, (value, key) => {
-                let templatesFunctions = Utils.loadGeneratorTemplates(value, generator_name, project_info.language); // TODO crea funzione di caricamento asincrono dei templates
-                result = _.concat(result, _.zipWith(
-                    value.map(p => path.join(project_info[key + "_dir"], p)),
-                    templatesFunctions.map(template => template(project_info)),
-                    (path, content) => new Object({path: path, content: content})
-                ));
-            });
-
-            let buildFilesTemplatesFunctions = Utils.loadBuildFilesTemplates(project_info.build_tool.templates, project_info.build_tool.name);
-
-            return _.concat(
-                result,
-                _.zipWith(
-                    project_info.build_tool.templates,
-                    buildFilesTemplatesFunctions.map(template => template(project_info)),
-                    (path, content) => new Object({path: path, content: content})
-                )
-            )
-        }
-
-    }
-
     writeResults() {
 
     }
 
-    run() {
+    /**
+     * The rendering returns an array with objects containing path of file, content of file and id of file/group of files (depending of template format)
+     */
+    runRendering() {
         this.buildProjectInfo();
-        this.render();
-        return this.writeResults();
+        if (this.dependencies) {
+            return Promise
+                .all(this.dependencies.map((el) => el.render()))
+                .then((results) =>
+                    Promise.resolve(_.zipWith(this.dependencies, results, (depGen, result) => new Object({name: depGen.name, result: result})))
+                );
+        }
+        else
+            return this.render([]);
+    }
+
+    /**
+     *
+     * @param dependenciesResult array of objects with name as dependency name and result as array of render results
+     * @return {*}
+     */
+    render(dependenciesResult) {
+        if (this.generator.render) // Generator has its own generation function
+            return this.generator.render(this.project_info, dependenciesResult);
+        else
+            return this.defaultRenderingFunction(dependenciesResult);
+    }
+
+    defaultRenderingFunction(dependencies) { // This default rendering function handles every type of templates format
+        Utils.loadGeneratorTemplates(value, this.name, this.language_id)
+            .then((templates) => Promise.all(
+                templates,
+                Utils.loadBuildFilesTemplates(this.project_info.build_tool.templates, this.build_tool_id)))
+            .then((templatesFunctions) => {
+                let renderedFiles = [];
+                if (templatesFunctions[0] instanceof Array)
+                    renderedFiles = _.zipWith(
+                        this.project_info.templates.map(p => path.join(this.project_info.output_directories.src, p)), // Prepend to paths the src path
+                        templatesFunctions[0].map(template => template(project_info)), // Render templates
+                        (path, content) => new Object({path: path, content: content}) // Push into the array in a form {path: path, content: content}
+                    );
+                else if (templatesFunctions[0] instanceof Object) {
+                    /*
+                    templatesFunctions[0] can be in two forms:
+
+                    {
+                        t_id_1: "path/to/Class.java",
+                        ...
+                    }
+
+                    or
+
+                    {
+                        t_group_id_1: ["path/to/Class1.java", "path/to/Class2.java"],
+                        ...
+                    }
+
+                    or both together
+
+                     */
+                    renderedFiles = _.flatten(_.zipWith( // Need to flatten for last nested arrays
+                        _.keys(this.project_info.templates),
+                        _.values(this.project_info.templates),
+                        templatesFunctions[0],
+                        (t_id, t_path, t_functions) => {
+                            if (t_path instanceof String) {
+                                return new Object({
+                                    path: path.join((this.project_info.output_directories[t_id]) ? this.project_info.output_directories : this.project_info.output_directories.src, t_path),
+                                    id: t_id,
+                                    content: t_functions(this.project_info)
+                                });
+                            } else if (t_path instanceof Array) {
+                                return _.zipWith(
+                                    t_path.map(p => path.join((this.project_info.output_directories[t_id]) ? this.project_info.output_directories[t_id] : this.project_info.output_directories.src, p)),
+                                    t_functions.map(t => t(this.project_info)),
+                                    (path, content) => new Object({path: path, id: t_id, content: content})
+                                )
+                            }
+                        }
+                    ));
+                }
+                return Promise.resolve(_.concat(
+                    renderedFiles,
+                    this.dependencies.map(d => d.result),
+                    _.zipWith(
+                        this.project_info.build_tool.templates,
+                        templatesFunctions[1].map(template => template(this.project_info)),
+                        (path, content) => new Object({path: path, content: content})
+                    )))
+            });
     }
 
 }

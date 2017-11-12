@@ -5,6 +5,8 @@
 var path = require('path');
 var constants = require('./constants');
 
+/[a-zA_Z_][\\.\\w]*/g //TODO PACKAGE REGEX
+
 module.exports = {
     build_tools: {
         maven: { //TODO refactor with new convention of metadatas
@@ -123,7 +125,7 @@ module.exports = {
             }
         ]
     },
-    var_templates: {
+    var_templates: { //TODO remove src_dir from everything
         main_class: (language) => (language.package) ? language.package + ".MainVerticle" : "MainVerticle",
         package: (language) => language.package.trim().replace(/^\.+(.+)/, "").replace(/(.+)\.+$/, ""), // function to trim package name and remove left and side undesired points
         src_dir: (language) => path.join(...(["src", "main", language.name].concat(language.package.split(".")))),

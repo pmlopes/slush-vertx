@@ -15,7 +15,9 @@
     "boilerplate"
   ],
   "author": "Paulo Lopes",
-  "contributors": ["Francesco Guardiani <francescoguard@gmail.com> (slinkydeveloper.github.io)"],
+  "contributors": [
+    "Francesco Guardiani <francescoguard@gmail.com> (slinkydeveloper.github.io)"
+  ],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/pmlopes/slush-vertx/issues"
@@ -23,12 +25,13 @@
   "homepage": "https://www.jetdrone.xyz",
   "dependencies": {
     "ajv": "^5.2.2",
-    "fs-extra": "^4.0.0",
+    "fs-extra": "^4.0.2",
     "gulp": "^3.9.1",
     "gulp-util": "^3.0.8",
     "handlebars": "^4.0.10",
     "handlebars-helpers": "^0.9.5",
     "inquirer": "^3.2.1",
+    "joi": "^13.0.1",
     "json-schema-ref-parser": "^3.1.2",
     "lodash": "^4.17.4",
     "minimist": "^1.2.0",
