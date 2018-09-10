@@ -24,18 +24,18 @@
   },
   "homepage": "https://www.jetdrone.xyz",
   "dependencies": {
-    "ajv": "^5.2.2",
-    "fs-extra": "^4.0.2",
+    "ajv": "^6.5.0",
+    "fs-extra": "^6.0.1",
     "gulp": "^3.9.1",
     "gulp-util": "^3.0.8",
     "handlebars": "^4.0.10",
-    "handlebars-helpers": "^0.9.5",
-    "inquirer": "^3.2.1",
+    "handlebars-helpers": "^0.10.0",
+    "inquirer": "^6.0.0",
     "joi": "^13.0.1",
-    "json-schema-ref-parser": "^3.1.2",
+    "json-schema-ref-parser": "^5.0.3",
     "lodash": "^4.17.4",
     "minimist": "^1.2.0",
     "string-template": "^1.0.0",
-    "swagger2openapi": "^2.6.3"
+    "swagger2openapi": "^2.11.16"
   }
 }

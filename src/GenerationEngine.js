@@ -43,9 +43,7 @@ class GenerationEngine {
         this.dependencies.forEach((dep) => dep.buildProjectInfo());
     }
 
-    writeResults() {
-
-    }
+    writeResults() {}
 
     /**
      * The rendering returns an array with objects containing path of file, content of file and id of file/group of files (depending of template format)
