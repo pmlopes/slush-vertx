@@ -1,3 +1,6 @@
+# This project has been replaced with https://github.com/pmlopes/vertx-starter
+
+
 # slush-vertx
 
 [![NPM](https://nodei.co/npm/slush-vertx.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/slush-vertx/)
